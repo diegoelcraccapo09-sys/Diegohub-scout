@@ -95,6 +95,11 @@
               <div class="field grow"><label for="serverSort">ORDENAR RESULTADOS</label><select id="serverSort"><option value="free">Más espacios libres</option><option value="ping">Menor ping informado</option><option value="players">Menos jugadores</option></select></div>
               <div class="field"><label for="serverFilter">FILTRO</label><select id="serverFilter"><option value="all">Todos</option><option value="free">Con espacios</option><option value="full">Llenos</option></select></div>
             </div>
+            <div class="join-by-id">
+              <div class="field grow"><label for="jobIdInput">UNIRSE MEDIANTE JOB ID</label><input id="jobIdInput" type="text" inputmode="text" autocomplete="off" maxlength="36" placeholder="Pega aquí el Job ID del servidor"></div>
+              <button class="secondary-btn" id="joinJobId" type="button">Abrir servidor ↗</button>
+            </div>
+            <p class="muted server-help">También puedes copiar el Job ID de cualquier resultado y compartirlo o guardarlo.</p>
             <div class="button-row"><button class="primary-btn" id="searchServers">🔎 Buscar servidores</button><button class="secondary-btn" id="nextServers" disabled>Siguiente tanda →</button></div>
             <p class="status-text" id="serverStatus" role="status">Preparado. Pulsa buscar para consultar Roblox.</p>
             <div class="stat-grid mini-stats" id="serverStats"></div>
