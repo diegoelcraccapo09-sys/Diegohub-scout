@@ -28,6 +28,7 @@
         <button class="nav-btn" data-tab="servidores"><span>🌐</span> Servidores</button>
         <button class="nav-btn" data-tab="finder"><span>📡</span> Egg Finder <em class="nav-new">BETA</em></button>
         <button class="nav-btn" data-tab="huevos"><span>🥚</span> Catálogo</button>
+        <button class="nav-btn" data-tab="mascotas"><span>🐾</span> Mascotas</button>
         <span class="nav-label nav-group-label">PROGRESO Y REGISTROS</span>
         <button class="nav-btn" data-tab="rastreador"><span>🎯</span> Bitácora</button>
         <button class="nav-btn" data-tab="ruta"><span>⚡</span> Farm & progreso</button>
@@ -188,6 +189,24 @@
             </div>
             <button class="primary-btn" id="compareEggs">⚖ Comparar huevos</button>
             <div id="compareResult" class="compare-result empty-state">Selecciona dos huevos para ver sus diferencias.</div>
+          </article>
+        </section>
+
+        <section class="panel" id="mascotas">
+          <div class="page-intro"><span class="eyebrow">BASE DE DATOS</span><h1>Catálogo de <span>mascotas</span></h1><p>Busca mascotas, compara su rareza y consulta su ingreso base por segundo.</p></div>
+          <article class="surface">
+            <div class="field"><label for="petSearch">BUSCAR MASCOTA O ZONA</label><input id="petSearch" type="search" placeholder="Ej.: Chicken, Forest, Fox..."></div>
+            <div class="toolbar-wrap filters">
+              <div class="field grow"><label for="petRarityFilter">RAREZA</label><select id="petRarityFilter"><option value="all">Todas las rarezas</option><option>Common</option><option>Uncommon</option><option>Rare</option><option>Epic</option><option>Legendary</option><option>Mythic</option><option>Cosmic</option><option>Secret</option><option>Eternal</option><option>Divine</option><option>Sin confirmar</option></select></div>
+              <div class="field grow"><label for="petSort">ORDENAR POR</label><select id="petSort"><option value="name">Nombre</option><option value="income-desc">Mayor ingreso</option><option value="income-asc">Menor ingreso</option></select></div>
+            </div>
+            <div class="catalog-summary"><span id="petCount">Mascotas</span><span class="muted">Datos comunitarios · base sin mutaciones</span></div>
+            <div class="egg-grid" id="petGrid"></div>
+          </article>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">CÓMO LEER LOS VALORES</span><h3>Ingreso base y mutaciones</h3></div><span class="heading-icon">💰</span></div>
+            <p class="muted">El ingreso mostrado es una referencia base de comunidad. El tamaño y las mutaciones pueden modificar lo que produce una mascota. Comprueba siempre el valor que aparece en tu partida.</p>
+            <p class="muted">La lista inicial es pequeña y no representa todas las mascotas del juego. La iremos ampliando y etiquetando según la calidad de la información.</p>
           </article>
         </section>
 
