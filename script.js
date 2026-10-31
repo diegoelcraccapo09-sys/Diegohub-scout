@@ -10,7 +10,7 @@ const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) 
 const state = {
   tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
   servers: [], seen: new Set(), favorites: new Set(), serverFavorites: new Set(), history: [],
-  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true, protectionMode:false, protectionChecks:{}, farmSession:null, farmHistory:[], farmIncomeRate:"", farmTargetMinutes:"" }
+  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true, protectionMode:false, protectionChecks:{}, farmSession:null, farmHistory:[], farmIncomeRate:"", farmTargetMinutes:"", serverProxyUrl:"" }
 };
 function load() {
   const saved = safeParse(localStorage.getItem(STORAGE), {});
@@ -283,21 +283,28 @@ async function fetchServerPage(){
  const cooldown=Math.max(0,state.rateLimitUntil-Date.now());
  if(cooldown)throw new Error(`Roblox pidió una pausa. Vuelve a intentar en ${Math.ceil(cooldown/1000)} s.`);
  if(wait){$("serverStatus").textContent=`⏳ Espera ${Math.ceil(wait/1000)} s para respetar el límite de consultas...`;await sleep(wait);}
- let url=`https://games.roblox.com/v1/games/${GAME_ID}/servers/Public?limit=${PAGE_LIMIT}&sortOrder=Asc`;
- if(state.cursor)url+="&cursor="+encodeURIComponent(state.cursor);
+ const proxy=String(state.settings.serverProxyUrl||"").trim();
+ if(!proxy)throw new Error("La conexión directa está bloqueada por CORS. Configura primero el proxy seguro de Diego Hub en esta sección; consulta la guía de GitHub.");
+ let url;
+ try{
+  const base=new URL(proxy);
+  if(base.protocol!=="https:")throw new Error("Usa una dirección HTTPS.");
+  url=new URL("/servers",base.origin);
+  if(state.cursor)url.searchParams.set("cursor",state.cursor);
+ }catch(err){throw new Error(err.message||"La URL del proxy no es válida.");}
  state.lastRequest=Date.now();
  let response;
- try{response=await fetch(url,{headers:{"Accept":"application/json"}});}
- catch(err){throw new Error("El navegador bloqueó la conexión (posible CORS) o no hay internet. Para hacerlo fiable hace falta un pequeño proxy seguro; no es un fallo de tu código.");}
+ try{response=await fetch(url.toString(),{headers:{"Accept":"application/json"} ,mode:"cors",credentials:"omit"});}
+ catch(err){throw new Error("No se pudo conectar al proxy. Revisa su URL y que esté desplegado correctamente.");}
  if(response.status===429){
   const retryAfter=Number(response.headers.get("Retry-After"));
   const pause=Number.isFinite(retryAfter)&&retryAfter>0?retryAfter*1000:60000;
   state.rateLimitUntil=Date.now()+Math.max(60000,pause);
   throw new Error(`Roblox limitó temporalmente las consultas. Espera ${Math.ceil(Math.max(60000,pause)/1000)} s antes de volver a intentar.`);
  }
- if(response.status===403)throw new Error("Roblox rechazó la consulta (HTTP 403). Intenta más tarde; el panel no inventará resultados.");
- if(!response.ok)throw new Error(`Roblox respondió HTTP ${response.status}.`);
- const data=await response.json();if(!Array.isArray(data.data))throw new Error("Roblox devolvió un formato inesperado.");
+ if(response.status===403)throw new Error("El proxy rechazó la solicitud. Comprueba que su origen permitido sea https://diegoelcraccapo09-sys.github.io.");
+ if(!response.ok)throw new Error(`El proxy respondió HTTP ${response.status}.`);
+ const data=await response.json();if(!Array.isArray(data.data))throw new Error("El proxy devolvió un formato inesperado.");
  return data;
 }
 async function searchServerPage(reset){
@@ -321,6 +328,13 @@ async function searchServerPage(reset){
  }catch(err){if(reset)state.cursor=previousCursor;$("serverStatus").textContent="❌ "+err.message;toast("No se pudo completar la búsqueda.");}
  finally{state.loading=false;$("searchServers").disabled=false;$("nextServers").disabled=!state.cursor;}
 }
+$("saveServerProxy").addEventListener("click",()=>{
+ const value=$("serverProxyUrl").value.trim();
+ if(!value){state.settings.serverProxyUrl="";persist();toast("Proxy desconectado.");return;}
+ try{const parsed=new URL(value);if(parsed.protocol!=="https:")throw new Error();state.settings.serverProxyUrl=parsed.origin;$("serverProxyUrl").value=parsed.origin;persist();state.cursor=null;toast("Conexión guardada. Ya puedes buscar servidores.");}
+ catch{toast("Pega una URL HTTPS válida de Cloudflare Worker.");}
+});
+$("serverProxyUrl").value=state.settings.serverProxyUrl||"";
 $("searchServers").addEventListener("click",()=>searchServerPage(true));
 $("nextServers").addEventListener("click",()=>searchServerPage(false));
 $("clearHistory").addEventListener("click",()=>{if(!confirmAction("¿Borrar el historial de búsquedas?"))return;state.history=[];persist();renderHistory();});
