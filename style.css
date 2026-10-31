@@ -56,3 +56,24 @@ body{background:radial-gradient(ellipse at 12% 0%,#263d7040,transparent 35%),rad
 .toast{background:#172943;border-color:#4e80bd}.nav-new{color:#a7eaff;border-color:#4c8fc1;background:#357da51a}
 .server-favorite.is-favorite{border-color:#70a7e4;color:#c4e8ff;background:#203c5c}
 @media(max-width:720px){.sidebar{background:linear-gradient(180deg,#0d1628,#09111f);border-right-color:#2a3d5e}.topbar{background:#080d19f5}.hero{border-radius:21px}.content{padding-top:22px}.surface{border-radius:17px}.nav-group-label{margin-top:11px}}
+
+/* Dashboard 3.1 */
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.85fr);gap:18px;margin-top:20px}
+.dashboard-main,.dashboard-side{min-width:0}
+.dashboard-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dashboard-action{display:flex;align-items:center;gap:12px;text-align:left;padding:14px;background:#14233a;border:1px solid #304767;border-radius:15px;color:var(--text);cursor:pointer;min-width:0;transition:transform .18s,border-color .18s,background .18s}
+.dashboard-action:hover{transform:translateY(-2px);border-color:#69b9dd;background:#1a2e4a}
+.dashboard-action>span:nth-child(2){display:grid;gap:4px;min-width:0}
+.dashboard-action b{font-size:13px}.dashboard-action small{font-size:11px;color:var(--muted);line-height:1.4}
+.dashboard-action em{margin-left:auto;color:#8dddf0;font-size:20px;font-style:normal}
+.dash-icon{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;border-radius:12px;background:#263d60;font-size:19px}
+.dashboard-status{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid #293b59}
+.dashboard-status:last-of-type{border-bottom:0;margin-bottom:12px}
+.dashboard-status>div{display:grid;gap:4px}.dashboard-status b{font-size:12px}.dashboard-status small{font-size:11px;color:var(--muted);line-height:1.5}
+.activity-surface{margin-top:18px}
+.home-activity{display:grid;gap:8px}
+.home-activity-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:13px;background:#111e32;border:1px solid #2a3d5b}
+.home-activity-icon{width:34px;height:34px;display:grid;place-items:center;background:#263d60;border-radius:11px}
+.home-activity-copy{display:grid;gap:3px;min-width:0}.home-activity-copy b{font-size:12px}.home-activity-copy small{font-size:10px;color:var(--muted);overflow-wrap:anywhere}
+@media(max-width:850px){.dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.dashboard-actions{grid-template-columns:1fr}.dashboard-action{padding:12px}.dashboard-grid{gap:12px}}
