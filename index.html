@@ -226,6 +226,18 @@
             <button class="secondary-btn" id="resetChecklist">Reiniciar checklist</button>
           </article>
           <article class="surface"><div class="card-heading"><div><span class="eyebrow">HERRAMIENTAS</span><h3>Calculadora de objetivo</h3></div><span class="heading-icon">⌁</span></div><div class="toolbar-wrap"><div class="field grow"><label for="currentSpeed">SPEED ACTUAL</label><input id="currentSpeed" type="number" min="0" placeholder="Ej.: 10000"></div><div class="field grow"><label for="targetSpeed">SPEED OBJETIVO</label><input id="targetSpeed" type="number" min="0" placeholder="Ej.: 40000"></div></div><button class="primary-btn" id="calculateSpeed">Calcular diferencia</button><p id="speedResult" class="status-text">Introduce tu Speed actual y objetivo.</p></article>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">ENTRENAMIENTO</span><h3>Simulador de cinta y trail</h3></div><span class="heading-icon">🏃</span></div>
+            <p class="muted">Calcula cuánto Speed podrías ganar en una sesión. Introduce el aumento que muestra tu cinta y el multiplicador del trail equipado.</p>
+            <div class="toolbar-wrap">
+              <div class="field grow"><label for="treadmillGain">SPEED POR PASO DE TU CINTA</label><input id="treadmillGain" type="number" min="0.01" step="any" value="2" placeholder="Ej.: 2"></div>
+              <div class="field grow"><label for="trailMultiplier">TRAIL EQUIPADO</label><select id="trailMultiplier"><option value="1">Sin trail (×1)</option><option value="1.5" selected>Grey / Gray (×1.5)</option><option value="2">Green (×2)</option><option value="2.5">Blue (×2.5)</option><option value="3">Purple (×3)</option><option value="3.5">Golden (×3.5)</option><option value="4">Red (×4)</option><option value="5">Galaxy (×5)</option><option value="7">Secret (×7)</option><option value="10">Eternal (×10)</option><option value="14">Divine (×14)</option><option value="20">Moonbloom (×20)</option></select></div>
+              <div class="field grow"><label for="treadmillSteps">PASOS DE LA SESIÓN</label><input id="treadmillSteps" type="number" min="0" step="1" value="1000" placeholder="Ej.: 1000"></div>
+            </div>
+            <button class="primary-btn" id="calculateTraining">Calcular Speed estimado</button>
+            <p id="trainingResult" class="status-text" role="status">Con estos valores, verás una estimación del Speed ganado.</p>
+            <small class="muted">Referencia comunitaria, no dato oficial garantizado. La fórmula supone que el multiplicador del trail se aplica al Speed ganado en la cinta; comprueba el resultado en el juego antes de planificar compras.</small>
+          </article>
         </section>
 
         <section class="panel" id="recompensas">

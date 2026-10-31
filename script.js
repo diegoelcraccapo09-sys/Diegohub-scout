@@ -379,6 +379,16 @@ $("calculateSpeed").addEventListener("click",()=>{
  const diff=target-current;
  $("speedResult").textContent=diff>0?"Te faltan "+diff.toLocaleString("es-UY")+" de Speed para llegar al objetivo.":diff===0?"¡Ya alcanzaste tu objetivo!":"Superaste tu objetivo por "+Math.abs(diff).toLocaleString("es-UY")+".";
 });
+$("calculateTraining").addEventListener("click",()=>{
+ const gain=Number($("treadmillGain").value);
+ const multiplier=Number($("trailMultiplier").value);
+ const steps=Number($("treadmillSteps").value);
+ if($("treadmillGain").value.trim()===""||$("treadmillSteps").value.trim()===""||!Number.isFinite(gain)||!Number.isFinite(multiplier)||!Number.isFinite(steps)||gain<=0||steps<0||!Number.isInteger(steps)){
+  $("trainingResult").textContent="Introduce Speed por paso mayor que cero y una cantidad de pasos entera igual o mayor que cero.";return;
+ }
+ const total=gain*multiplier*steps;
+ $("trainingResult").textContent="Ganancia estimada: +"+total.toLocaleString("es-UY",{maximumFractionDigits:2})+" Speed ("+steps.toLocaleString("es-UY")+" pasos × "+gain.toLocaleString("es-UY")+" × "+multiplier.toLocaleString("es-UY")+" trail).";
+});
 
 $("reducedMotion").addEventListener("change",e=>{
  state.settings.reducedMotion=e.target.checked;document.body.classList.toggle("reduce-motion",e.target.checked);save();
