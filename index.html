@@ -149,8 +149,24 @@
               <div class="field grow"><label for="typeFilter">TIPO</label><select id="typeFilter"><option value="all">Todos los tipos</option><option>Básico</option><option>Evento</option><option>Especial</option><option>Desconocido</option></select></div>
               <div class="field grow"><label for="confidenceFilter">ESTADO</label><select id="confidenceFilter"><option value="all">Todos</option><option>Confirmado</option><option>Comunitario</option><option>Por verificar</option></select></div>
             </div>
-            <div class="catalog-summary"><span id="eggCount">18 resultados</span><span>♡ Pulsa guardar para favoritos</span></div>
+            <div class="catalog-summary"><span id="eggCount">Catálogo</span><label class="favorites-filter"><input id="favoritesOnly" type="checkbox"> Solo favoritos</label></div>
             <div class="egg-grid" id="eggGrid"></div>
+          </article>
+          <article class="surface catalog-add">
+            <div class="card-heading"><div><span class="eyebrow">AMPLIAR EL CATÁLOGO</span><h3>Agregar huevo o mascota</h3></div><span class="heading-icon">＋</span></div>
+            <p class="muted">¿Falta algo o encontraste una zona nueva? Añádelo aquí. Tus aportes quedan guardados solo en este dispositivo y se marcan como <b>Por verificar</b>; no se presentan como datos oficiales.</p>
+            <form id="customEggForm" class="catalog-form">
+              <div class="field"><label for="customEggName">NOMBRE DEL HUEVO / PET</label><input id="customEggName" required maxlength="60" placeholder="Nombre exacto que ves en el juego"></div>
+              <div class="field"><label for="customEggZone">ZONA</label><input id="customEggZone" required maxlength="50" placeholder="Zona donde aparece"></div>
+              <div class="field"><label for="customEggGuardian">MASCOTA / GUARDIÁN (OPCIONAL)</label><input id="customEggGuardian" maxlength="60" placeholder="Nombre de la mascota"></div>
+              <div class="toolbar-wrap">
+                <div class="field grow"><label for="customEggType">TIPO</label><select id="customEggType"><option>Básico</option><option>Evento</option><option>Especial</option><option>Desconocido</option></select></div>
+                <div class="field grow"><label for="customEggSpeed">SPEED / REQUISITO</label><input id="customEggSpeed" maxlength="30" placeholder="Ej.: 2.5M / Sin requisito"></div>
+              </div>
+              <div class="field"><label for="customEggNote">NOTAS / CÓMO LO COMPROBASTE</label><textarea id="customEggNote" rows="2" maxlength="180" placeholder="Ej.: Lo vi en la zona durante el evento..."></textarea></div>
+              <button class="primary-btn" type="submit">＋ Guardar aporte local</button>
+            </form>
+            <p id="customEggStatus" class="status-text" role="status">Los aportes locales se pueden exportar desde Configuración.</p>
           </article>
           <article class="surface">
             <div class="card-heading"><div><span class="eyebrow">COMPARACIÓN</span><h3>Comparador de huevos</h3></div><span class="heading-icon">⇄</span></div>

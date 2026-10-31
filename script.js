@@ -10,7 +10,7 @@ const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) 
 const state = {
   tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
   servers: [], seen: new Set(), favorites: new Set(), history: [],
-  goals: [], sightings: [], finderReports: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true }
+  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true }
 };
 function load() {
   const saved = safeParse(localStorage.getItem(STORAGE), {});
@@ -19,6 +19,7 @@ function load() {
   state.goals = Array.isArray(saved.goals) ? saved.goals : [];
   state.sightings = Array.isArray(saved.sightings) ? saved.sightings : [];
   state.finderReports = Array.isArray(saved.finderReports) ? saved.finderReports : [];
+  state.customEggs = Array.isArray(saved.customEggs) ? saved.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string") : [];
   state.checks = saved.checks || {};
   state.settings = {...state.settings, ...(saved.settings || {})};
 }
@@ -26,7 +27,7 @@ function persist() {
   try {
     localStorage.setItem(STORAGE, JSON.stringify({
       favorites:[...state.favorites], history:state.history.slice(0,10),
-      goals:state.goals, sightings:state.sightings, finderReports:state.finderReports, checks:state.checks, settings:state.settings
+      goals:state.goals, sightings:state.sightings, finderReports:state.finderReports, customEggs:state.customEggs, checks:state.checks, settings:state.settings
     }));
   } catch { toast("No se pudieron guardar los datos. Puede que el almacenamiento esté lleno."); }
 }
@@ -90,14 +91,22 @@ const eggs = [
  {name:"Titan Temple Egg",zone:"Titan Temple",speed:"Consultar",guardian:"Gorilla King",type:"Especial",status:"Comunitario",note:"La zona Titan Temple aparece en guías comunitarias; confirmar etiqueta y acceso dentro del juego."}
 ];
 const zoneFilter = $("zoneFilter");
-[...new Set(eggs.map(e=>e.zone))].sort((a,b)=>a.localeCompare(b)).forEach(zone=>{
- const opt=document.createElement("option"); opt.value=zone; opt.textContent=zone; zoneFilter.append(opt);
-});
+function allEggs(){return [...eggs,...state.customEggs];}
+function refreshZoneOptions(){
+ const selected=zoneFilter.value||"all";
+ const zones=[...new Set(allEggs().map(e=>e.zone))].sort((a,b)=>a.localeCompare(b));
+ zoneFilter.replaceChildren(new Option("Todas las zonas","all"));
+ zones.forEach(zone=>zoneFilter.append(new Option(zone,zone)));
+ zoneFilter.value=zones.includes(selected)?selected:"all";
+}
+refreshZoneOptions();
 function eggStatusClass(status){return status==="Confirmado"?"confirmed":status==="Comunitario"?"community":"pending";}
 function renderEggs(){
- const query=$("eggSearch").value.trim().toLowerCase(), zone=zoneFilter.value, type=$("typeFilter").value, confidence=$("confidenceFilter").value;
- const found=eggs.filter(e=>(zone==="all"||e.zone===zone)&&(type==="all"||e.type===type)&&(confidence==="all"||e.status===confidence)&&[e.name,e.zone,e.guardian,e.note].join(" ").toLowerCase().includes(query));
- $("eggCount").textContent=`${found.length} de ${eggs.length} entradas`;
+ refreshZoneOptions();
+ const query=$("eggSearch").value.trim().toLowerCase(), zone=zoneFilter.value, type=$("typeFilter").value, confidence=$("confidenceFilter").value, favoritesOnly=$("favoritesOnly").checked;
+ const catalog=allEggs();
+ const found=catalog.filter(e=>(zone==="all"||e.zone===zone)&&(type==="all"||e.type===type)&&(confidence==="all"||e.status===confidence)&&(!favoritesOnly||state.favorites.has(e.name))&&[e.name,e.zone,e.guardian,e.note].join(" ").toLowerCase().includes(query));
+ $("eggCount").textContent=`${found.length} de ${catalog.length} entradas`;
  $("eggGrid").replaceChildren();
  if(!found.length){$("eggGrid").innerHTML='<div class="empty-state" style="grid-column:1/-1"><span>🔎</span><b>No hay coincidencias</b><small>Prueba otro nombre o filtro.</small></div>';return;}
  found.forEach(e=>{
@@ -112,16 +121,34 @@ function renderEggs(){
   [["Zona",e.zone],["Speed",e.speed],["Guardián",e.guardian]].forEach(([k,v])=>{const p=document.createElement("p");p.innerHTML=`${k}: <b>${escapeHTML(v)}</b>`;meta.append(p);});
   const tag=document.createElement("span");tag.className="tag "+eggStatusClass(e.status);tag.textContent=e.status;
   const note=document.createElement("p");note.className="muted";note.style.fontSize="9px";note.textContent=e.note;
-  card.append(top,title,meta,tag,note);$("eggGrid").append(card);
+  card.append(top,title,meta,tag,note);
+  if(e.custom){const remove=document.createElement("button");remove.type="button";remove.className="text-btn custom-egg-remove";remove.textContent="Eliminar mi aporte";remove.addEventListener("click",()=>{if(!confirmAction("¿Eliminar este aporte local?"))return;state.customEggs=state.customEggs.filter(x=>x.id!==e.id);state.favorites.delete(e.name);save();fillCompare();renderEggs();});card.append(remove);}
+  $("eggGrid").append(card);
  });
 }
-["eggSearch","zoneFilter","typeFilter","confidenceFilter"].forEach(id=>$(id).addEventListener(id==="eggSearch"?"input":"change",renderEggs));
+["eggSearch","zoneFilter","typeFilter","confidenceFilter","favoritesOnly"].forEach(id=>$(id).addEventListener(id==="eggSearch"?"input":"change",renderEggs));
 function fillCompare(){
- ["compareA","compareB"].forEach(id=>{const s=$(id);s.replaceChildren();eggs.forEach(e=>{const o=document.createElement("option");o.value=e.name;o.textContent=e.name;s.append(o);});});
- $("compareB").selectedIndex=Math.min(1,eggs.length-1);
+ ["compareA","compareB"].forEach(id=>{const s=$(id);s.replaceChildren();allEggs().forEach(e=>{const o=document.createElement("option");o.value=e.name;o.textContent=e.name;s.append(o);});});
+ $("compareB").selectedIndex=Math.min(1,allEggs().length-1);
 }
+$("customEggForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const name=$("customEggName").value.trim(),zone=$("customEggZone").value.trim();
+ if(!name||!zone)return;
+ if(allEggs().some(item=>item.name.toLowerCase()===name.toLowerCase())){
+  $("customEggStatus").textContent="Ese nombre ya existe en el catálogo. Revisa la búsqueda antes de agregarlo.";return;
+ }
+ state.customEggs.unshift({
+  id:"local-"+Date.now(),name,zone,guardian:$("customEggGuardian").value.trim()||"—",
+  type:$("customEggType").value,speed:$("customEggSpeed").value.trim()||"Sin confirmar",
+  status:"Por verificar",note:$("customEggNote").value.trim()||"Aporte local del jugador; pendiente de comprobación.",custom:true
+ });
+ $("customEggForm").reset();save();fillCompare();renderEggs();
+ $("customEggStatus").textContent="Aporte guardado localmente como Por verificar.";
+ toast("Aporte añadido al catálogo local.");
+});
 $("compareEggs").addEventListener("click",()=>{
- const a=eggs.find(e=>e.name===$("compareA").value),b=eggs.find(e=>e.name===$("compareB").value);
+ const a=allEggs().find(e=>e.name===$("compareA").value),b=allEggs().find(e=>e.name===$("compareB").value);
  if(!a||!b)return;
  if(a.name===b.name){$("compareResult").textContent="Elige dos huevos diferentes para compararlos.";return;}
  const rows=[["Zona",a.zone,b.zone],["Speed",a.speed,b.speed],["Guardián",a.guardian,b.guardian],["Tipo",a.type,b.type],["Estado",a.status,b.status]];
@@ -133,7 +160,7 @@ $("compareEggs").addEventListener("click",()=>{
 });
 
 function updateDashboard(){
- $("statEggs").textContent=eggs.length;$("statServers").textContent=state.servers.length;
+ $("statEggs").textContent=allEggs().length;$("statServers").textContent=state.servers.length;
  $("statSaved").textContent=state.favorites.size;$("statGoals").textContent=state.goals.filter(g=>g.done).length;
 }
 function renderHistory(){
@@ -234,7 +261,7 @@ async function searchServerPage(reset){
   const validAdded=addedServers.filter(s=>s.valid);
   state.history.unshift({date:new Date().toLocaleString("es-UY"),total:addedServers.length,free:validAdded.filter(s=>s.free>0).length,full:validAdded.filter(s=>s.free===0).length});
   state.history=state.history.slice(0,10);persist();renderHistory();
-  $("serverStatus").textContent=`✅ Se añadieron ${added} servidores. Total acumulado: ${state.servers.length}.`;
+  $("serverStatus").textContent=`✅ Se añadieron ${addedServers.length} servidores. Total acumulado: ${state.servers.length}.`;
  }catch(err){if(reset)state.cursor=previousCursor;$("serverStatus").textContent="❌ "+err.message;toast("No se pudo completar la búsqueda.");}
  finally{state.loading=false;$("searchServers").disabled=false;$("nextServers").disabled=!state.cursor;}
 }
@@ -337,7 +364,7 @@ $("reducedMotion").addEventListener("change",e=>{
 });
 $("confirmDelete").addEventListener("change",e=>{state.settings.confirmDelete=e.target.checked;save();});
 $("exportData").addEventListener("click",()=>{
- const data={exportedAt:new Date().toISOString(),favorites:[...state.favorites],history:state.history,goals:state.goals,sightings:state.sightings,finderReports:state.finderReports,checks:state.checks,settings:state.settings};
+ const data={exportedAt:new Date().toISOString(),favorites:[...state.favorites],history:state.history,goals:state.goals,sightings:state.sightings,finderReports:state.finderReports,customEggs:state.customEggs,checks:state.checks,settings:state.settings};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="diego-hub-backup.json";document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
@@ -345,8 +372,8 @@ $("exportData").addEventListener("click",()=>{
 });
 $("resetData").addEventListener("click",()=>{
  if(!confirmAction("Esto borrará favoritos, historial y registros guardados en este dispositivo. ¿Continuar?"))return;
- state.favorites.clear();state.history=[];state.goals=[];state.sightings=[];state.finderReports=[];state.checks={};
- state.settings={reducedMotion:false,confirmDelete:true};persist();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();
+ state.favorites.clear();state.history=[];state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};
+ state.settings={reducedMotion:false,confirmDelete:true};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();
  $("reducedMotion").checked=false;$("confirmDelete").checked=true;document.body.classList.remove("reduce-motion");
  toast("Datos locales restablecidos.");
 });
