@@ -10,7 +10,7 @@ const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) 
 const state = {
   tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
   servers: [], seen: new Set(), favorites: new Set(), serverFavorites: new Set(), history: [],
-  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true, protectionMode:false, protectionChecks:{}, farmSession:null, farmHistory:[], farmIncomeRate:"", farmTargetMinutes:"", serverProxyUrl:"" }
+  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, playerProfile: {}, playerHistory: [], settings: { reducedMotion:false, confirmDelete:true, protectionMode:false, protectionChecks:{}, farmSession:null, farmHistory:[], farmIncomeRate:"", farmTargetMinutes:"", serverProxyUrl:"" }
 };
 function load() {
   const saved = safeParse(localStorage.getItem(STORAGE), {});
@@ -22,6 +22,8 @@ function load() {
   state.finderReports = Array.isArray(saved.finderReports) ? saved.finderReports : [];
   state.customEggs = Array.isArray(saved.customEggs) ? saved.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string") : [];
   state.checks = saved.checks || {};
+  state.playerProfile = saved.playerProfile && typeof saved.playerProfile === "object" ? saved.playerProfile : {};
+  state.playerHistory = Array.isArray(saved.playerHistory) ? saved.playerHistory.slice(0,30) : [];
   state.settings = {...state.settings, ...(saved.settings || {})};
   state.settings.farmHistory = Array.isArray(state.settings.farmHistory) ? state.settings.farmHistory.slice(0,10) : [];
   state.settings.farmSession = state.settings.farmSession && typeof state.settings.farmSession === "object" ? state.settings.farmSession : null;
@@ -30,7 +32,7 @@ function persist() {
   try {
     localStorage.setItem(STORAGE, JSON.stringify({
       favorites:[...state.favorites], serverFavorites:[...state.serverFavorites], history:state.history.slice(0,10),
-      goals:state.goals, sightings:state.sightings, finderReports:state.finderReports, customEggs:state.customEggs, checks:state.checks, settings:state.settings
+      goals:state.goals, sightings:state.sightings, finderReports:state.finderReports, customEggs:state.customEggs, checks:state.checks, playerProfile:state.playerProfile, playerHistory:state.playerHistory, settings:state.settings
     }));
   } catch { toast("No se pudieron guardar los datos. Puede que el almacenamiento esté lleno."); }
 }
@@ -557,11 +559,13 @@ $("importFile").addEventListener("change",async event=>{
   state.finderReports=Array.isArray(backup.finderReports)?backup.finderReports:[];
   state.customEggs=Array.isArray(backup.customEggs)?backup.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string"):[];
   state.checks=backup.checks&&typeof backup.checks==="object"?backup.checks:{};
+  state.playerProfile=backup.playerProfile&&typeof backup.playerProfile==="object"&&!Array.isArray(backup.playerProfile)?backup.playerProfile:{};
+  state.playerHistory=Array.isArray(backup.playerHistory)?backup.playerHistory.filter(x=>x&&typeof x==="object").slice(0,30):[];
   const importedSettings=backup.settings&&typeof backup.settings==="object"&&!Array.isArray(backup.settings)?backup.settings:{};
   const candidateSession=importedSettings.farmSession;
   const importedSession=candidateSession&&typeof candidateSession==="object"&&["running","paused","finished"].includes(candidateSession.status)&&Number.isFinite(Number(candidateSession.elapsedMs))&&(candidateSession.status!=="running"||Number.isFinite(Number(candidateSession.startedAt)))?{status:candidateSession.status,elapsedMs:Math.max(0,Number(candidateSession.elapsedMs)||0),startedAt:candidateSession.status==="running"?Number(candidateSession.startedAt):null}:null;
-  state.settings={reducedMotion:!!importedSettings.reducedMotion,confirmDelete:importedSettings.confirmDelete!==false,protectionMode:!!importedSettings.protectionMode,protectionChecks:importedSettings.protectionChecks&&typeof importedSettings.protectionChecks==="object"&&!Array.isArray(importedSettings.protectionChecks)?importedSettings.protectionChecks:{},farmSession:importedSession,farmHistory:Array.isArray(importedSettings.farmHistory)?importedSettings.farmHistory.filter(x=>x&&Number.isFinite(Number(x.elapsedMs))).slice(0,10):[],farmIncomeRate:typeof importedSettings.farmIncomeRate==="string"?importedSettings.farmIncomeRate:"",farmTargetMinutes:typeof importedSettings.farmTargetMinutes==="string"?importedSettings.farmTargetMinutes:""};
-  persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderServers();updateDashboard();
+  state.settings={reducedMotion:!!importedSettings.reducedMotion,confirmDelete:importedSettings.confirmDelete!==false,protectionMode:!!importedSettings.protectionMode,protectionChecks:importedSettings.protectionChecks&&typeof importedSettings.protectionChecks==="object"&&!Array.isArray(importedSettings.protectionChecks)?importedSettings.protectionChecks:{},farmSession:importedSession,farmHistory:Array.isArray(importedSettings.farmHistory)?importedSettings.farmHistory.filter(x=>x&&Number.isFinite(Number(x.elapsedMs))).slice(0,10):[],farmIncomeRate:typeof importedSettings.farmIncomeRate==="string"?importedSettings.farmIncomeRate:"",farmTargetMinutes:typeof importedSettings.farmTargetMinutes==="string"?importedSettings.farmTargetMinutes:"",serverProxyUrl:typeof importedSettings.serverProxyUrl==="string"?importedSettings.serverProxyUrl:""};
+  persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderPlayerProfile();renderEventChecklist();renderServers();updateDashboard();
   $("reducedMotion").checked=!!state.settings.reducedMotion;$("confirmDelete").checked=!!state.settings.confirmDelete;
   document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
   toast("Copia importada correctamente.");
@@ -570,8 +574,8 @@ $("importFile").addEventListener("change",async event=>{
 });
 $("resetData").addEventListener("click",()=>{
  if(!confirmAction("Esto borrará favoritos, historial y registros guardados en este dispositivo. ¿Continuar?"))return;
- state.favorites.clear();state.serverFavorites.clear();state.history=[];state.servers=[];state.seen.clear();state.cursor=null;state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};
- state.settings={reducedMotion:false,confirmDelete:true,protectionMode:false,protectionChecks:{},farmSession:null,farmHistory:[],farmIncomeRate:"",farmTargetMinutes:""};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderServers();updateDashboard();
+ state.favorites.clear();state.serverFavorites.clear();state.history=[];state.servers=[];state.seen.clear();state.cursor=null;state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};state.playerProfile={};state.playerHistory=[];
+ state.settings={reducedMotion:false,confirmDelete:true,protectionMode:false,protectionChecks:{},farmSession:null,farmHistory:[],farmIncomeRate:"",farmTargetMinutes:"",serverProxyUrl:""};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderPlayerProfile();renderEventChecklist();renderServers();updateDashboard();
  $("reducedMotion").checked=false;$("confirmDelete").checked=true;document.body.classList.remove("reduce-motion");
  toast("Datos locales restablecidos.");
 });
@@ -637,12 +641,65 @@ $("calculateRoutePlan").addEventListener("click",()=>{
  out.textContent=diff===0?"¡Ya alcanzaste o superaste tu objetivo!": "Te faltan "+formatGameNumber(diff)+" Speed. Ganancia estimada por paso: "+formatGameNumber(perStep)+". Necesitarías aproximadamente "+steps.toLocaleString("es-UY")+" pasos.";
 });
 
+function playerFields(){
+ const fields=["playerSpeed","playerCash","playerRebirths","playerBase","playerTreadmill","playerTrail"];
+ return Object.fromEntries(fields.map(id=>[id.replace("player","").toLowerCase(),$(id).value.trim()]));
+}
+function renderPlayerProfile(){
+ const p=state.playerProfile||{};
+ const map={speed:"playerSpeed",cash:"playerCash",rebirths:"playerRebirths",base:"playerBase",treadmill:"playerTreadmill",trail:"playerTrail"};
+ Object.entries(map).forEach(([key,id])=>{if(document.activeElement!==$(id))$(id).value=p[key]??"";});
+ if(document.activeElement!==$("playerNote"))$("playerNote").value=p.note||"";
+ const box=$("playerHistory"),rows=state.playerHistory||[];
+ if(!rows.length){box.innerHTML='<div class="empty-state"><span>📈</span><b>Aún no hay registros</b><small>Guarda tu perfil y registra tu primer progreso.</small></div>';return;}
+ box.innerHTML=rows.map((r,i)=>{
+  const prev=rows[i+1],delta=prev&&Number.isFinite(Number(r.speed))&&Number.isFinite(Number(prev.speed))?Number(r.speed)-Number(prev.speed):null;
+  return '<div class="player-history-row"><div><b>'+escapeHTML(r.date||"Registro")+'</b><small>'+escapeHTML(r.note||"Sin nota")+'</small></div><div class="player-history-metrics"><span>Speed <b>'+escapeHTML(formatGameNumber(Number(r.speed)||0))+'</b></span><span>Dinero <b>'+escapeHTML(formatGameNumber(Number(r.cash)||0))+'</b></span><span>Rebirths <b>'+escapeHTML(r.rebirths||"0")+'</b></span>'+(delta===null?'':'<span class="player-delta '+(delta>=0?'positive':'negative')+'">'+(delta>=0?'+':'')+escapeHTML(formatGameNumber(delta))+' Speed</span>')+'</div></div>';
+ }).join("");
+}
+function savePlayerProfile(snapshot=false){
+ const profile=playerFields();
+ const labels={speed:"Speed",cash:"Dinero",rebirths:"Rebirths",base:"Base",treadmill:"Cinta",trail:"Trail"};
+ for(const [key,label] of Object.entries(labels)){if(profile[key]!==""&&(!Number.isFinite(Number(profile[key]))||Number(profile[key])<0)){toast(label+" debe ser un número igual o mayor que cero.");return;}}
+ profile.note=$("playerNote").value.trim().slice(0,240);
+ state.playerProfile=profile;
+ if(snapshot){
+  if(!Object.values(profile).some(v=>v!==""&&v!==profile.note)){toast("Completa al menos una estadística antes de registrar.");return;}
+  state.playerHistory.unshift({...profile,date:new Date().toLocaleString("es-UY")});
+  state.playerHistory=state.playerHistory.slice(0,30);
+ }
+ persist();renderPlayerProfile();
+ $("playerStatus").textContent=snapshot?"Progreso registrado. Tu historial se actualizó.":"Perfil guardado en este dispositivo.";
+ toast(snapshot?"¡Progreso registrado!":"Perfil guardado.");
+}
+$("savePlayerProfile").addEventListener("click",()=>savePlayerProfile(false));
+$("snapshotPlayer").addEventListener("click",()=>savePlayerProfile(true));
+$("clearPlayerHistory").addEventListener("click",()=>{
+ if(!confirmAction("¿Borrar todos los registros de progreso del jugador?"))return;
+ state.playerHistory=[];persist();renderPlayerProfile();toast("Historial de jugador borrado.");
+});
+document.querySelectorAll("[data-event-check]").forEach(input=>{
+ const key=input.dataset.eventCheck;
+ input.checked=!!state.checks["event:"+key];
+ input.addEventListener("change",()=>{
+  state.checks["event:"+key]=input.checked;persist();
+  const all=[...document.querySelectorAll("[data-event-check]")],done=all.filter(x=>x.checked).length;
+  $("eventChecklistStatus").textContent=done+" de "+all.length+" objetivos de evento completados. Guardado localmente.";
+ });
+});
+function renderEventChecklist(){
+ const all=[...document.querySelectorAll("[data-event-check]")];
+ all.forEach(input=>input.checked=!!state.checks["event:"+input.dataset.eventCheck]);
+ const done=all.filter(x=>x.checked).length;
+ $("eventChecklistStatus").textContent=done+" de "+all.length+" objetivos de evento completados. Guardado localmente.";
+}
+
 function initialize(){
  load();
  $("reducedMotion").checked=!!state.settings.reducedMotion;
  $("confirmDelete").checked=!!state.settings.confirmDelete;
  document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
- fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderServers();updateDashboard();
+ fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderPlayerProfile();renderEventChecklist();renderServers();updateDashboard();
 }
 initialize();
 })();
