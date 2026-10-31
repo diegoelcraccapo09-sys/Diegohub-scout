@@ -25,7 +25,7 @@ function load() {
   const savedProfile = saved.playerProfile && typeof saved.playerProfile === "object" && !Array.isArray(saved.playerProfile) ? saved.playerProfile : {};
   const {rebirths: ignoredRebirths, ...currentProfile} = savedProfile;
   state.playerProfile = currentProfile;
-  state.playerHistory = Array.isArray(saved.playerHistory) ? saved.playerHistory.slice(0,30).map(({rebirths: ignored, ...entry}) => entry) : [];
+  state.playerHistory = Array.isArray(saved.playerHistory) ? saved.playerHistory.filter(entry=>entry&&typeof entry==="object"&&!Array.isArray(entry)).slice(0,30).map(({rebirths: ignored, ...entry}) => entry) : [];
   state.settings = {...state.settings, ...(saved.settings || {})};
   state.settings.farmHistory = Array.isArray(state.settings.farmHistory) ? state.settings.farmHistory.slice(0,10) : [];
   state.settings.farmSession = state.settings.farmSession && typeof state.settings.farmSession === "object" ? state.settings.farmSession : null;
@@ -388,7 +388,9 @@ function renderFinder(){
    join.addEventListener("click",()=>{
     openRobloxServer(report.jobId);
    });
-   card.append(join);
+   const copy=document.createElement("button");copy.className="secondary-btn";copy.type="button";copy.textContent="Copiar Job ID";
+   copy.addEventListener("click",()=>copyText(report.jobId));
+   card.append(join,copy);
   }
   const del=document.createElement("button");del.className="remove-btn finder-delete";del.type="button";del.textContent="×";del.setAttribute("aria-label","Eliminar hallazgo");
   del.addEventListener("click",()=>{if(!confirmAction("¿Eliminar este hallazgo?"))return;state.finderReports=state.finderReports.filter(x=>x.id!==report.id);save();renderFinder();updateDashboard();});
