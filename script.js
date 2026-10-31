@@ -8,7 +8,7 @@ const REQUEST_GAP = 12000;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } };
 const state = {
-  tab: "inicio", cursor: null, lastRequest: 0, loading: false,
+  tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
   servers: [], seen: new Set(), favorites: new Set(), history: [],
   goals: [], sightings: [], finderReports: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true }
 };
