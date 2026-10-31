@@ -9,12 +9,13 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } };
 const state = {
   tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
-  servers: [], seen: new Set(), favorites: new Set(), history: [],
+  servers: [], seen: new Set(), favorites: new Set(), serverFavorites: new Set(), history: [],
   goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true }
 };
 function load() {
   const saved = safeParse(localStorage.getItem(STORAGE), {});
-  state.favorites = new Set(saved.favorites || []);
+  state.favorites = new Set(Array.isArray(saved.favorites) ? saved.favorites : []);
+  state.serverFavorites = new Set(Array.isArray(saved.serverFavorites) ? saved.serverFavorites : []);
   state.history = Array.isArray(saved.history) ? saved.history : [];
   state.goals = Array.isArray(saved.goals) ? saved.goals : [];
   state.sightings = Array.isArray(saved.sightings) ? saved.sightings : [];
@@ -26,7 +27,7 @@ function load() {
 function persist() {
   try {
     localStorage.setItem(STORAGE, JSON.stringify({
-      favorites:[...state.favorites], history:state.history.slice(0,10),
+      favorites:[...state.favorites], serverFavorites:[...state.serverFavorites], history:state.history.slice(0,10),
       goals:state.goals, sightings:state.sightings, finderReports:state.finderReports, customEggs:state.customEggs, checks:state.checks, settings:state.settings
     }));
   } catch { toast("No se pudieron guardar los datos. Puede que el almacenamiento esté lleno."); }
@@ -197,6 +198,7 @@ function renderServers(){
  let arr=[...state.servers];
  if(filter==="free")arr=arr.filter(s=>s.valid&&s.free>0);
  if(filter==="full")arr=arr.filter(s=>s.valid&&s.free===0);
+ if(filter==="favorites")arr=arr.filter(s=>state.serverFavorites.has(s.id));
  arr.sort((a,b)=>sort==="ping"?(a.ping??999999)-(b.ping??999999):sort==="players"?a.playing-b.playing:(b.free-a.free)||((a.ping??999999)-(b.ping??999999)));
  const valid=state.servers.filter(s=>s.valid),free=valid.filter(s=>s.free>0).length,full=valid.filter(s=>s.free===0).length;
  $("serverStats").innerHTML=`<article class="stat-card"><div><small>Analizados</small><strong>${state.servers.length}</strong></div></article><article class="stat-card"><div><small>Con espacios</small><strong>${free}</strong></div></article><article class="stat-card"><div><small>Llenos</small><strong>${full}</strong></div></article><article class="stat-card"><div><small>Datos dudosos</small><strong>${state.servers.length-valid.length}</strong></div></article>`;
@@ -209,11 +211,13 @@ function renderServers(){
   const p2=document.createElement("p");p2.textContent=`🟢 Espacios: ${s.valid?s.free:"Dato no válido"}`;
   const p3=document.createElement("p");p3.textContent=`📶 Ping informado: ${s.ping===null?"No disponible":s.ping+" ms"}`;
   const actions=document.createElement("div");actions.className="server-actions";
+  const favorite=document.createElement("button");favorite.className="secondary-btn server-favorite"+(state.serverFavorites.has(s.id)?" is-favorite":"");favorite.type="button";favorite.textContent=state.serverFavorites.has(s.id)?"★ Guardado":"☆ Guardar";favorite.setAttribute("aria-pressed",String(state.serverFavorites.has(s.id)));
+  favorite.addEventListener("click",()=>{if(state.serverFavorites.has(s.id)){state.serverFavorites.delete(s.id);}else{state.serverFavorites.add(s.id);}persist();renderServers();toast(state.serverFavorites.has(s.id)?"Servidor guardado en favoritos":"Servidor quitado de favoritos");});
   const join=document.createElement("button");join.className="primary-btn";join.textContent="Abrir servidor ↗";join.type="button";
   join.addEventListener("click",()=>openRobloxServer(s.id));
   const copy=document.createElement("button");copy.className="secondary-btn";copy.textContent="Copiar Job ID";copy.type="button";
   copy.addEventListener("click",()=>copyText(s.id));
-  actions.append(join,copy);
+  actions.append(favorite,join,copy);
   const idLabel=document.createElement("small");idLabel.className="server-job-id";idLabel.textContent="Job ID: "+s.id;
   card.append(h,p1,p2,p3,idLabel,actions);list.append(card);
  });
@@ -364,15 +368,39 @@ $("reducedMotion").addEventListener("change",e=>{
 });
 $("confirmDelete").addEventListener("change",e=>{state.settings.confirmDelete=e.target.checked;save();});
 $("exportData").addEventListener("click",()=>{
- const data={exportedAt:new Date().toISOString(),favorites:[...state.favorites],history:state.history,goals:state.goals,sightings:state.sightings,finderReports:state.finderReports,customEggs:state.customEggs,checks:state.checks,settings:state.settings};
+ const data={format:"diego-hub-backup",version:1,exportedAt:new Date().toISOString(),favorites:[...state.favorites],serverFavorites:[...state.serverFavorites],history:state.history,goals:state.goals,sightings:state.sightings,finderReports:state.finderReports,customEggs:state.customEggs,checks:state.checks,settings:state.settings};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="diego-hub-backup.json";document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
  toast("Copia de seguridad preparada.");
 });
+$("importData").addEventListener("click",()=>$("importFile").click());
+$("importFile").addEventListener("change",async event=>{
+ const file=event.target.files&&event.target.files[0];if(!file)return;
+ try{
+  if(file.size>2*1024*1024)throw new Error("El archivo supera 2 MB.");
+  const backup=JSON.parse(await file.text());
+  if(!backup||typeof backup!=="object"||(!Array.isArray(backup.favorites)&&!Array.isArray(backup.goals)&&backup.format!=="diego-hub-backup"))throw new Error("El archivo no parece una copia de Diego Hub.");
+  if(!window.confirm("Importar reemplazará los datos locales actuales por los de esta copia. ¿Continuar?"))return;
+  state.favorites=new Set(Array.isArray(backup.favorites)?backup.favorites.filter(x=>typeof x==="string"):[]);
+  state.serverFavorites=new Set(Array.isArray(backup.serverFavorites)?backup.serverFavorites.filter(x=>typeof x==="string"):[]);
+  state.history=Array.isArray(backup.history)?backup.history.slice(0,50):[];
+  state.goals=Array.isArray(backup.goals)?backup.goals:[];
+  state.sightings=Array.isArray(backup.sightings)?backup.sightings:[];
+  state.finderReports=Array.isArray(backup.finderReports)?backup.finderReports:[];
+  state.customEggs=Array.isArray(backup.customEggs)?backup.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string"):[];
+  state.checks=backup.checks&&typeof backup.checks==="object"?backup.checks:{};
+  state.settings={...state.settings,...(backup.settings&&typeof backup.settings==="object"?backup.settings:{})};
+  persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();
+  $("reducedMotion").checked=!!state.settings.reducedMotion;$("confirmDelete").checked=!!state.settings.confirmDelete;
+  document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
+  toast("Copia importada correctamente.");
+ }catch(err){toast("No se pudo importar: "+err.message);}
+ finally{event.target.value="";}
+});
 $("resetData").addEventListener("click",()=>{
  if(!confirmAction("Esto borrará favoritos, historial y registros guardados en este dispositivo. ¿Continuar?"))return;
- state.favorites.clear();state.history=[];state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};
+ state.favorites.clear();state.serverFavorites.clear();state.history=[];state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};
  state.settings={reducedMotion:false,confirmDelete:true};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();
  $("reducedMotion").checked=false;$("confirmDelete").checked=true;document.body.classList.remove("reduce-motion");
  toast("Datos locales restablecidos.");

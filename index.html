@@ -93,7 +93,7 @@
           <article class="surface">
             <div class="toolbar-wrap">
               <div class="field grow"><label for="serverSort">ORDENAR RESULTADOS</label><select id="serverSort"><option value="free">Más espacios libres</option><option value="ping">Menor ping informado</option><option value="players">Menos jugadores</option></select></div>
-              <div class="field"><label for="serverFilter">FILTRO</label><select id="serverFilter"><option value="all">Todos</option><option value="free">Con espacios</option><option value="full">Llenos</option></select></div>
+              <div class="field"><label for="serverFilter">FILTRO</label><select id="serverFilter"><option value="all">Todos</option><option value="free">Con espacios</option><option value="full">Llenos</option><option value="favorites">Mis favoritos</option></select></div>
             </div>
             <div class="join-by-id">
               <div class="field grow"><label for="jobIdInput">UNIRSE MEDIANTE JOB ID</label><input id="jobIdInput" type="text" inputmode="text" autocomplete="off" maxlength="36" placeholder="Pega aquí el Job ID del servidor"></div>
@@ -230,6 +230,7 @@
             <div class="setting-row"><div><b>Reducir animaciones</b><small>Menos movimiento en las transiciones.</small></div><label class="switch"><input type="checkbox" id="reducedMotion"><span></span></label></div>
             <div class="setting-row"><div><b>Confirmar antes de borrar</b><small>Evita eliminar registros por accidente.</small></div><label class="switch"><input type="checkbox" id="confirmDelete" checked><span></span></label></div>
             <div class="setting-row"><div><b>Exportar mis datos</b><small>Descarga favoritos, objetivos y registros locales.</small></div><button class="secondary-btn" id="exportData">Exportar JSON</button></div>
+            <div class="setting-row"><div><b>Importar una copia</b><small>Restaura tus favoritos y registros desde un archivo JSON de Diego Hub.</small></div><button class="secondary-btn" id="importData">Importar JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
             <div class="setting-row"><div><b>Restablecer datos locales</b><small>Borra favoritos, historial y seguimiento guardado.</small></div><button class="danger-btn" id="resetData">Restablecer</button></div>
           </article>
           <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 2.0</h3></div><span class="version-pill">v2.0</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
