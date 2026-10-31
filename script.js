@@ -662,17 +662,23 @@ function renderPlayerProfile(){
  if(!rows.length){box.innerHTML='<div class="empty-state"><span>📈</span><b>Aún no hay registros</b><small>Guarda tu perfil y registra tu primer progreso.</small></div>';return;}
  box.innerHTML=rows.map((r,i)=>{
   const prev=rows[i+1],delta=prev&&Number.isFinite(Number(r.speed))&&Number.isFinite(Number(prev.speed))?Number(r.speed)-Number(prev.speed):null;
-  return '<div class="player-history-row"><div><b>'+escapeHTML(r.date||"Registro")+'</b><small>'+escapeHTML(r.note||"Sin nota")+'</small></div><div class="player-history-metrics"><span>Speed <b>'+escapeHTML(formatGameNumber(Number(r.speed)||0))+'</b></span><span>Dinero <b>'+escapeHTML(formatGameNumber(Number(r.cash)||0))+'</b></span><span>Ingreso <b>
+  return '<div class="player-history-row"><div><b>'+escapeHTML(r.date||"Registro")+'</b><small>'+escapeHTML(r.note||"Sin nota")+'</small></div><div class="player-history-metrics"><span>Speed <b>'+escapeHTML(formatGameNumber(Number(r.speed)||0))+'</b></span><span>Dinero <b>'+escapeHTML(formatGameNumber(Number(r.cash)||0))+'</b></span><span>Ingreso <b>$'+escapeHTML(formatGameNumber(Number(r.income)||0))+'/s</b></span>'+(delta===null?'':'<span class="player-delta '+(delta>=0?'positive':'negative')+'">'+(delta>=0?'+':'')+escapeHTML(formatGameNumber(delta))+' Speed</span>')+'</div></div>';
  }).join("");
 }
 function savePlayerProfile(snapshot=false){
  const profile=playerFields();
  const labels={speed:"Speed",cash:"Dinero",income:"Ingreso de mascotas",base:"Base",treadmill:"Cinta",trail:"Trail"};
- for(const [key,label] of Object.entries(labels)){if(profile[key]!==""&&(!Number.isFinite(Number(profile[key]))||Number(profile[key])<0)){toast(label+" debe ser un número igual o mayor que cero.");return;}}
+ for(const [key,label] of Object.entries(labels)){
+  if(profile[key]!==""&&(!Number.isFinite(Number(profile[key]))||Number(profile[key])<0)){
+   toast(label+" debe ser un número igual o mayor que cero.");return;
+  }
+ }
  profile.note=$("playerNote").value.trim().slice(0,240);
+ if(snapshot&&!Object.entries(profile).some(([key,value])=>key!=="note"&&value!=="")){
+  toast("Completa al menos una estadística antes de registrar.");return;
+ }
  state.playerProfile=profile;
  if(snapshot){
-  if(!Object.values(profile).some(v=>v!==""&&v!==profile.note)){toast("Completa al menos una estadística antes de registrar.");return;}
   state.playerHistory.unshift({...profile,date:new Date().toLocaleString("es-UY")});
   state.playerHistory=state.playerHistory.slice(0,30);
  }
@@ -686,54 +692,7 @@ $("clearPlayerHistory").addEventListener("click",()=>{
  if(!confirmAction("¿Borrar todos los registros de progreso del jugador?"))return;
  state.playerHistory=[];persist();renderPlayerProfile();toast("Historial de jugador borrado.");
 });
-document.querySelectorAll("[data-event-check]").forEach(input=>{
- const key=input.dataset.eventCheck;
- input.checked=!!state.checks["event:"+key];
- input.addEventListener("change",()=>{
-  state.checks["event:"+key]=input.checked;persist();
-  const all=[...document.querySelectorAll("[data-event-check]")],done=all.filter(x=>x.checked).length;
-  $("eventChecklistStatus").textContent=done+" de "+all.length+" objetivos de evento completados. Guardado localmente.";
- });
-});
-function renderEventChecklist(){
- const all=[...document.querySelectorAll("[data-event-check]")];
- all.forEach(input=>input.checked=!!state.checks["event:"+input.dataset.eventCheck]);
- const done=all.filter(x=>x.checked).length;
- $("eventChecklistStatus").textContent=done+" de "+all.length+" objetivos de evento completados. Guardado localmente.";
-}
 
-function initialize(){
- load();
- $("reducedMotion").checked=!!state.settings.reducedMotion;
- $("confirmDelete").checked=!!state.settings.confirmDelete;
- document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
- fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderPlayerProfile();renderEventChecklist();renderServers();updateDashboard();
-}
-initialize();
-})();+escapeHTML(formatGameNumber(Number(r.income)||0))+'/s</b></span>'+(delta===null?'':'<span class="player-delta '+(delta>=0?'positive':'negative')+'">'+(delta>=0?'+':'')+escapeHTML(formatGameNumber(delta))+' Speed</span>')+'</div></div>';
- }).join("");
-}
-function savePlayerProfile(snapshot=false){
- const profile=playerFields();
- const labels={speed:"Speed",cash:"Dinero",rebirths:"Rebirths",base:"Base",treadmill:"Cinta",trail:"Trail"};
- for(const [key,label] of Object.entries(labels)){if(profile[key]!==""&&(!Number.isFinite(Number(profile[key]))||Number(profile[key])<0)){toast(label+" debe ser un número igual o mayor que cero.");return;}}
- profile.note=$("playerNote").value.trim().slice(0,240);
- state.playerProfile=profile;
- if(snapshot){
-  if(!Object.values(profile).some(v=>v!==""&&v!==profile.note)){toast("Completa al menos una estadística antes de registrar.");return;}
-  state.playerHistory.unshift({...profile,date:new Date().toLocaleString("es-UY")});
-  state.playerHistory=state.playerHistory.slice(0,30);
- }
- persist();renderPlayerProfile();
- $("playerStatus").textContent=snapshot?"Progreso registrado. Tu historial se actualizó.":"Perfil guardado en este dispositivo.";
- toast(snapshot?"¡Progreso registrado!":"Perfil guardado.");
-}
-$("savePlayerProfile").addEventListener("click",()=>savePlayerProfile(false));
-$("snapshotPlayer").addEventListener("click",()=>savePlayerProfile(true));
-$("clearPlayerHistory").addEventListener("click",()=>{
- if(!confirmAction("¿Borrar todos los registros de progreso del jugador?"))return;
- state.playerHistory=[];persist();renderPlayerProfile();toast("Historial de jugador borrado.");
-});
 document.querySelectorAll("[data-event-check]").forEach(input=>{
  const key=input.dataset.eventCheck;
  input.checked=!!state.checks["event:"+key];
