@@ -229,3 +229,99 @@ function renderSightings(){
  });
 }
 $("sightingForm").addEventListener("submit",e=>{e.preventDefault();state.sightings.unshift({id:Date.now(),egg:$("sightingEgg").value.trim(),zone:$("sightingZone").value.trim(),notes:$("sightingNotes").value.trim(),date:new Date().toLocaleString("es-UY")});$("sightingForm").reset();save();renderSightings();to
+ast("Hallazgo guardado.");});
+$("clearSightings").addEventListener("click",()=>{if(!confirmAction("¿Borrar todos los hallazgos de la bitácora?"))return;state.sightings=[];save();renderSightings();});
+
+function renderFinder(){
+ const box=$("finderFeed"),query=$("finderSearch").value.trim().toLowerCase();
+ box.replaceChildren();
+ const reports=state.finderReports.filter(r=>[r.egg,r.rarity,r.notes,r.jobId].join(" ").toLowerCase().includes(query));
+ if(!reports.length){box.innerHTML='<div class="empty-state"><span>📡</span><b>Sin hallazgos coincidentes</b><small>Registra uno o cambia la búsqueda.</small></div>';return;}
+ reports.forEach(report=>{
+  const card=document.createElement("article");card.className="finder-report";
+  const head=document.createElement("div");head.className="finder-report-head";
+  const title=document.createElement("b");title.textContent=report.egg;
+  const tag=document.createElement("span");tag.className="tag community";tag.textContent=report.rarity||"Sin confirmar";
+  head.append(title,tag);
+  const details=document.createElement("small");
+  details.textContent=[report.date,report.jobId?"Job ID: "+report.jobId:"Sin Job ID",report.notes].filter(Boolean).join(" · ");
+  card.append(head,details);
+  if(report.jobId){
+   const join=document.createElement("button");join.className="secondary-btn";join.type="button";join.textContent="Intentar abrir servidor ↗";
+   join.addEventListener("click",()=>{
+    const url="https://www.roblox.com/games/start?placeId="+GAME_ID+"&gameInstanceId="+encodeURIComponent(report.jobId);
+    window.open(url,"_blank","noopener,noreferrer");
+   });
+   card.append(join);
+  }
+  const del=document.createElement("button");del.className="remove-btn finder-delete";del.type="button";del.textContent="×";del.setAttribute("aria-label","Eliminar hallazgo");
+  del.addEventListener("click",()=>{if(!confirmAction("¿Eliminar este hallazgo?"))return;state.finderReports=state.finderReports.filter(x=>x.id!==report.id);save();renderFinder();});
+  card.append(del);box.append(card);
+ });
+}
+$("finderForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const egg=$("finderEgg").value.trim(),jobId=$("finderJobId").value.trim();
+ if(!egg)return;
+ state.finderReports.unshift({id:Date.now(),egg,rarity:$("finderRarity").value,jobId,notes:$("finderNotes").value.trim(),date:new Date().toLocaleString("es-UY")});
+ state.finderReports=state.finderReports.slice(0,100);
+ $("finderForm").reset();save();renderFinder();toast("Hallazgo guardado en este dispositivo.");
+});
+$("finderSearch").addEventListener("input",renderFinder);
+$("clearFinderReports").addEventListener("click",()=>{
+ if(!confirmAction("¿Borrar todos tus hallazgos del Finder?"))return;
+ state.finderReports=[];save();renderFinder();toast("Tus hallazgos fueron borrados.");
+});
+$("finderGoServers").addEventListener("click",()=>go("servidores"));
+
+function renderChecklist(){
+ const checks=[...document.querySelectorAll("[data-check]")];
+ const done=checks.filter(c=>state.checks[c.dataset.check]).length;
+ checks.forEach(c=>c.checked=!!state.checks[c.dataset.check]);
+ $("progressBar").style.width=(checks.length?done/checks.length*100:0)+"%";
+ $("progressCaption").textContent=done+" de "+checks.length+" pasos completados";
+}
+document.querySelectorAll("[data-check]").forEach(c=>c.addEventListener("change",()=>{
+ state.checks[c.dataset.check]=c.checked;save();renderChecklist();
+}));
+$("resetChecklist").addEventListener("click",()=>{
+ if(!confirmAction("¿Reiniciar todos los pasos del checklist?"))return;
+ state.checks={};save();renderChecklist();
+});
+$("calculateSpeed").addEventListener("click",()=>{
+ const current=Number($("currentSpeed").value),target=Number($("targetSpeed").value);
+ if($("currentSpeed").value.trim()===""||$("targetSpeed").value.trim()===""||!Number.isFinite(current)||!Number.isFinite(target)||current<0||target<0){
+  $("speedResult").textContent="Introduce dos valores válidos, iguales o mayores que cero.";return;
+ }
+ const diff=target-current;
+ $("speedResult").textContent=diff>0?"Te faltan "+diff.toLocaleString("es-UY")+" de Speed para llegar al objetivo.":diff===0?"¡Ya alcanzaste tu objetivo!":"Superaste tu objetivo por "+Math.abs(diff).toLocaleString("es-UY")+".";
+});
+
+$("reducedMotion").addEventListener("change",e=>{
+ state.settings.reducedMotion=e.target.checked;document.body.classList.toggle("reduce-motion",e.target.checked);save();
+});
+$("confirmDelete").addEventListener("change",e=>{state.settings.confirmDelete=e.target.checked;save();});
+$("exportData").addEventListener("click",()=>{
+ const data={exportedAt:new Date().toISOString(),favorites:[...state.favorites],history:state.history,goals:state.goals,sightings:state.sightings,finderReports:state.finderReports,checks:state.checks,settings:state.settings};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="diego-hub-backup.json";document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
+ toast("Copia de seguridad preparada.");
+});
+$("resetData").addEventListener("click",()=>{
+ if(!confirmAction("Esto borrará favoritos, historial y registros guardados en este dispositivo. ¿Continuar?"))return;
+ state.favorites.clear();state.history=[];state.goals=[];state.sightings=[];state.finderReports=[];state.checks={};
+ state.settings={reducedMotion:false,confirmDelete:true};persist();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();
+ $("reducedMotion").checked=false;$("confirmDelete").checked=true;document.body.classList.remove("reduce-motion");
+ toast("Datos locales restablecidos.");
+});
+
+function initialize(){
+ load();
+ $("reducedMotion").checked=!!state.settings.reducedMotion;
+ $("confirmDelete").checked=!!state.settings.confirmDelete;
+ document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
+ fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();updateDashboard();
+}
+initialize();
+})();
