@@ -10,7 +10,7 @@ const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) 
 const state = {
   tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
   servers: [], seen: new Set(), favorites: new Set(), serverFavorites: new Set(), history: [],
-  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true }
+  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true, protectionMode:false, protectionChecks:{} }
 };
 function load() {
   const saved = safeParse(localStorage.getItem(STORAGE), {});
@@ -46,7 +46,7 @@ function save() { persist(); updateDashboard(); }
 
 const panels = [...document.querySelectorAll(".panel")];
 const navButtons = [...document.querySelectorAll(".nav-btn")];
-const titles = {inicio:"Inicio",servidores:"Servidores",finder:"Finder",huevos:"Buscador de huevos",laboratorio:"Laboratorio",rastreador:"Rastreador",ruta:"Plan de progreso",recompensas:"Eventos y recompensas",ajustes:"Configuración"};
+const titles = {inicio:"Inicio",servidores:"Servidores",finder:"Finder",huevos:"Buscador de huevos",mascotas:"Mascotas",laboratorio:"Laboratorio",proteccion:"Protección",rastreador:"Rastreador",ruta:"Plan de progreso",recompensas:"Eventos y recompensas",ajustes:"Configuración"};
 function go(tab) {
   if (!titles[tab]) return;
   state.tab = tab;
@@ -399,6 +399,22 @@ function renderChecklist(){
 document.querySelectorAll("[data-check]").forEach(c=>c.addEventListener("change",()=>{
  state.checks[c.dataset.check]=c.checked;save();renderChecklist();
 }));
+function renderProtection(){
+ const checks=[...document.querySelectorAll("[data-protect-check]")],saved=state.settings.protectionChecks||{};
+ const done=checks.filter(c=>saved[c.dataset.protectCheck]).length,active=!!state.settings.protectionMode;
+ checks.forEach(c=>c.checked=!!saved[c.dataset.protectCheck]);
+ $("toggleProtection").setAttribute("aria-pressed",String(active));
+ $("toggleProtection").textContent=active?"🛡️ DESACTIVAR MODO PROTECCIÓN":"🔒 ACTIVAR PROTECCIÓN";
+ $("toggleProtection").classList.toggle("protection-active",active);
+ $("protectionIndicator").textContent=active?"ACTIVO":"INACTIVO";
+ $("protectionIndicator").classList.toggle("is-active",active);
+ $("protectionStatus").textContent=active?"Modo de apoyo activado. Completa la rutina y revisa tu base dentro del juego.":"Modo desactivado. Actívalo antes de empezar tu sesión.";
+ $("protectionProgressBar").style.width=(checks.length?done/checks.length*100:0)+"%";
+ $("protectionProgressCaption").textContent=done+" de "+checks.length+" pasos completados";
+}
+$("toggleProtection").addEventListener("click",()=>{state.settings.protectionMode=!state.settings.protectionMode;persist();renderProtection();toast(state.settings.protectionMode?"Modo de apoyo activado":"Modo de apoyo desactivado");});
+document.querySelectorAll("[data-protect-check]").forEach(c=>c.addEventListener("change",()=>{state.settings.protectionChecks=state.settings.protectionChecks||{};state.settings.protectionChecks[c.dataset.protectCheck]=c.checked;persist();renderProtection();}));
+$("resetProtectionChecklist").addEventListener("click",()=>{state.settings.protectionChecks={};persist();renderProtection();toast("Checklist de protección reiniciado");});
 $("resetChecklist").addEventListener("click",()=>{
  if(!confirmAction("¿Reiniciar todos los pasos del checklist?"))return;
  state.checks={};save();renderChecklist();
@@ -450,7 +466,7 @@ $("importFile").addEventListener("change",async event=>{
   state.customEggs=Array.isArray(backup.customEggs)?backup.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string"):[];
   state.checks=backup.checks&&typeof backup.checks==="object"?backup.checks:{};
   state.settings={...state.settings,...(backup.settings&&typeof backup.settings==="object"?backup.settings:{})};
-  persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();
+  persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderServers();
   $("reducedMotion").checked=!!state.settings.reducedMotion;$("confirmDelete").checked=!!state.settings.confirmDelete;
   document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
   toast("Copia importada correctamente.");
@@ -460,7 +476,7 @@ $("importFile").addEventListener("change",async event=>{
 $("resetData").addEventListener("click",()=>{
  if(!confirmAction("Esto borrará favoritos, historial y registros guardados en este dispositivo. ¿Continuar?"))return;
  state.favorites.clear();state.serverFavorites.clear();state.history=[];state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};
- state.settings={reducedMotion:false,confirmDelete:true};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();
+ state.settings={reducedMotion:false,confirmDelete:true,protectionMode:false,protectionChecks:{}};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();
  $("reducedMotion").checked=false;$("confirmDelete").checked=true;document.body.classList.remove("reduce-motion");
  toast("Datos locales restablecidos.");
 });
@@ -531,7 +547,7 @@ function initialize(){
  $("reducedMotion").checked=!!state.settings.reducedMotion;
  $("confirmDelete").checked=!!state.settings.confirmDelete;
  document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
- fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();updateDashboard();
+ fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderServers();updateDashboard();
 }
 initialize();
 })();
