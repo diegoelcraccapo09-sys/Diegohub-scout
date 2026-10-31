@@ -542,8 +542,11 @@ $("importFile").addEventListener("change",async event=>{
   state.finderReports=Array.isArray(backup.finderReports)?backup.finderReports:[];
   state.customEggs=Array.isArray(backup.customEggs)?backup.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string"):[];
   state.checks=backup.checks&&typeof backup.checks==="object"?backup.checks:{};
-  state.settings={...state.settings,...(backup.settings&&typeof backup.settings==="object"?backup.settings:{})};
-  persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderServers();
+  const importedSettings=backup.settings&&typeof backup.settings==="object"&&!Array.isArray(backup.settings)?backup.settings:{};
+  const candidateSession=importedSettings.farmSession;
+  const importedSession=candidateSession&&typeof candidateSession==="object"&&["running","paused","finished"].includes(candidateSession.status)&&Number.isFinite(Number(candidateSession.elapsedMs))&&(candidateSession.status!=="running"||Number.isFinite(Number(candidateSession.startedAt)))?{status:candidateSession.status,elapsedMs:Math.max(0,Number(candidateSession.elapsedMs)||0),startedAt:candidateSession.status==="running"?Number(candidateSession.startedAt):null}:null;
+  state.settings={reducedMotion:!!importedSettings.reducedMotion,confirmDelete:importedSettings.confirmDelete!==false,protectionMode:!!importedSettings.protectionMode,protectionChecks:importedSettings.protectionChecks&&typeof importedSettings.protectionChecks==="object"&&!Array.isArray(importedSettings.protectionChecks)?importedSettings.protectionChecks:{},farmSession:importedSession,farmHistory:Array.isArray(importedSettings.farmHistory)?importedSettings.farmHistory.filter(x=>x&&Number.isFinite(Number(x.elapsedMs))).slice(0,10):[],farmIncomeRate:typeof importedSettings.farmIncomeRate==="string"?importedSettings.farmIncomeRate:"",farmTargetMinutes:typeof importedSettings.farmTargetMinutes==="string"?importedSettings.farmTargetMinutes:""};
+  persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderServers();updateDashboard();
   $("reducedMotion").checked=!!state.settings.reducedMotion;$("confirmDelete").checked=!!state.settings.confirmDelete;
   document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
   toast("Copia importada correctamente.");
@@ -552,8 +555,8 @@ $("importFile").addEventListener("change",async event=>{
 });
 $("resetData").addEventListener("click",()=>{
  if(!confirmAction("Esto borrará favoritos, historial y registros guardados en este dispositivo. ¿Continuar?"))return;
- state.favorites.clear();state.serverFavorites.clear();state.history=[];state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};
- state.settings={reducedMotion:false,confirmDelete:true,protectionMode:false,protectionChecks:{}};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();
+ state.favorites.clear();state.serverFavorites.clear();state.history=[];state.servers=[];state.seen.clear();state.cursor=null;state.goals=[];state.sightings=[];state.finderReports=[];state.customEggs=[];state.checks={};
+ state.settings={reducedMotion:false,confirmDelete:true,protectionMode:false,protectionChecks:{},farmSession:null,farmHistory:[],farmIncomeRate:"",farmTargetMinutes:""};persist();fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderServers();updateDashboard();
  $("reducedMotion").checked=false;$("confirmDelete").checked=true;document.body.classList.remove("reduce-motion");
  toast("Datos locales restablecidos.");
 });
