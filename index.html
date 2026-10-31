@@ -299,6 +299,28 @@
 
         <section class="panel" id="ruta">
           <div class="page-intro"><span class="eyebrow">PROGRESO</span><h1>Plan de <span>progreso</span></h1><p>Organiza tu sesión y lleva el control de tus objetivos sin automatizar el juego.</p></div>
+          <article class="surface farm-session-card">
+            <div class="card-heading"><div><span class="eyebrow">FARM CENTER · NUEVO</span><h3>Control de sesión</h3></div><span class="heading-icon">⏱️</span></div>
+            <p class="muted">Cronometra tu sesión real de juego, estima ganancias y guarda un historial. No automatiza acciones dentro de Roblox.</p>
+            <div class="farm-session-stats">
+              <div><small>TIEMPO DE SESIÓN</small><strong id="farmTimer">00:00:00</strong></div>
+              <div><small>GANANCIA ESTIMADA</small><strong id="farmEarnings">$0</strong></div>
+              <div><small>OBJETIVO DE TIEMPO</small><strong id="farmTargetStatus">Sin objetivo</strong></div>
+            </div>
+            <div class="farm-inputs">
+              <div class="field"><label for="farmIncomeRate">INGRESO POR SEGUNDO ($/s)</label><input id="farmIncomeRate" type="number" min="0" step="any" placeholder="Ej.: 1250"></div>
+              <div class="field"><label for="farmTargetMinutes">OBJETIVO DE SESIÓN (MINUTOS)</label><input id="farmTargetMinutes" type="number" min="1" max="1440" step="1" placeholder="Ej.: 30"></div>
+            </div>
+            <div class="farm-actions">
+              <button class="primary-btn" id="farmStart" type="button">▶ Iniciar sesión</button>
+              <button class="secondary-btn" id="farmPause" type="button" disabled>⏸ Pausar</button>
+              <button class="secondary-btn" id="farmFinish" type="button" disabled>✓ Finalizar y guardar</button>
+              <button class="text-btn" id="farmReset" type="button">Reiniciar</button>
+            </div>
+            <p class="status-text" id="farmSessionStatus" role="status">Listo. Configura tus datos y comienza a jugar.</p>
+            <div class="farm-history-head"><b>Últimas sesiones</b><button class="text-btn" id="clearFarmHistory" type="button">Borrar historial</button></div>
+            <div id="farmHistory" class="history-list"><div class="empty-state"><small>Tus sesiones completadas aparecerán aquí.</small></div></div>
+          </article>
           <article class="surface">
             <div class="card-heading"><div><span class="eyebrow">PLAN DE SESIÓN</span><h3>Checklist de progreso</h3></div><span class="heading-icon">⚡</span></div>
             <p class="muted">Marca cada paso a medida que lo completes dentro de Roblox.</p>
