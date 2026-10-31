@@ -91,6 +91,38 @@ const eggs = [
  {name:"Rift Eggs",zone:"Rift",speed:"Evento",guardian:"—",type:"Evento",status:"Por verificar",note:"Hay reportes de varios grupos de huevos de Rift; nombres exactos no cargados."},
  {name:"Titan Temple Egg",zone:"Titan Temple",speed:"Consultar",guardian:"Gorilla King",type:"Especial",status:"Comunitario",note:"La zona Titan Temple aparece en guías comunitarias; confirmar etiqueta y acceso dentro del juego."}
 ];
+const pets = [
+ {name:"Chicken",rarity:"Common",zone:"Forest",income:1,incomeLabel:"$1/s",status:"Comunitario"},
+ {name:"Dog",rarity:"Common",zone:"Forest",income:2,incomeLabel:"$2/s",status:"Comunitario"},
+ {name:"Bird",rarity:"Uncommon",zone:"Forest",income:8,incomeLabel:"$8/s",status:"Comunitario"},
+ {name:"Burrowing Owl",rarity:"Rare",zone:"Forest",income:35,incomeLabel:"$35/s",status:"Comunitario"},
+ {name:"Raccoon",rarity:"Rare",zone:"Forest",income:45,incomeLabel:"$45/s",status:"Comunitario"},
+ {name:"Fox",rarity:"Epic",zone:"Forest",income:180,incomeLabel:"$180/s",status:"Comunitario"},
+ {name:"Bear",rarity:"Epic",zone:"Forest",income:240,incomeLabel:"$240/s",status:"Comunitario"},
+ {name:"Brr Brr Patapim",rarity:"Legendary",zone:"Forest",income:1800,incomeLabel:"$1.8K/s",status:"Comunitario"}
+];
+function renderPets(){
+ const query=$("petSearch").value.trim().toLowerCase(), rarity=$("petRarityFilter").value, sort=$("petSort").value;
+ const found=pets.filter(p=>(rarity==="all"||p.rarity===rarity)&&[p.name,p.zone,p.rarity,p.incomeLabel].join(" ").toLowerCase().includes(query));
+ if(sort==="income-desc")found.sort((a,b)=>b.income-a.income);
+ else if(sort==="income-asc")found.sort((a,b)=>a.income-b.income);
+ else found.sort((a,b)=>a.name.localeCompare(b.name));
+ $("petCount").textContent=`${found.length} de ${pets.length} mascotas cargadas`;
+ $("petGrid").replaceChildren();
+ if(!found.length){$("petGrid").innerHTML='<div class="empty-state" style="grid-column:1/-1"><span>🐾</span><b>No hay coincidencias</b><small>Prueba otro nombre o rareza.</small></div>';return;}
+ found.forEach(p=>{
+  const card=document.createElement("article");card.className="egg-card";
+  const top=document.createElement("div");top.className="egg-card-top";
+  const emoji=document.createElement("span");emoji.className="egg-emoji";emoji.textContent="🐾";
+  top.append(emoji);
+  const title=document.createElement("h3");title.textContent=p.name;
+  const meta=document.createElement("div");meta.className="egg-meta";
+  [["Rareza",p.rarity],["Zona",p.zone],["Ingreso base",p.incomeLabel]].forEach(([k,v])=>{const row=document.createElement("p");row.innerHTML=`${k}: <b>${escapeHTML(v)}</b>`;meta.append(row);});
+  const tag=document.createElement("span");tag.className="tag community";tag.textContent=p.status;
+  card.append(top,title,meta,tag);$("petGrid").append(card);
+ });
+}
+["petSearch","petRarityFilter","petSort"].forEach(id=>$(id).addEventListener(id==="petSearch"?"input":"change",renderPets));
 const zoneFilter = $("zoneFilter");
 function allEggs(){return [...eggs,...state.customEggs];}
 function refreshZoneOptions(){
@@ -438,7 +470,7 @@ function initialize(){
  $("reducedMotion").checked=!!state.settings.reducedMotion;
  $("confirmDelete").checked=!!state.settings.confirmDelete;
  document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
- fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();updateDashboard();
+ fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();updateDashboard();
 }
 initialize();
 })();
