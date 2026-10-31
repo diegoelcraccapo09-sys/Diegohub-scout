@@ -13,7 +13,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark">👑</div>
-        <div class="brand-copy"><strong>DIEGO HUB</strong><small>STEAL AN EGG · v3.4</small></div>
+        <div class="brand-copy"><strong>DIEGO HUB</strong><small>STEAL AN EGG · v3.5</small></div>
         <button class="icon-btn close-sidebar" id="closeSidebar" aria-label="Cerrar menú">✕</button>
       </div>
       <div class="profile-mini">
@@ -50,7 +50,7 @@
         <button class="icon-btn menu-btn" id="openSidebar" aria-label="Abrir menú">☰</button>
         <div class="breadcrumb"><span>Diego Hub</span><b>/</b><strong id="pageTitle">Inicio</strong></div>
         <div class="top-actions">
-          <span class="version-pill"><i></i> v3.4</span>
+          <span class="version-pill"><i></i> v3.5</span>
           <button class="icon-btn" id="minimizeHub" title="Minimizar panel" aria-label="Minimizar panel">－</button>
         </div>
       </header>
@@ -144,7 +144,8 @@
               <form id="finderForm">
                 <div class="field"><label for="finderEgg">HUEVO / PET</label><input id="finderEgg" required maxlength="60" placeholder="Ej.: Royal Skywhale"></div>
                 <div class="field"><label for="finderRarity">RAREZA / VARIANTE</label><select id="finderRarity"><option value="Sin confirmar">Sin confirmar</option><option value="Common">Common</option><option value="Uncommon">Uncommon</option><option value="Rare">Rare</option><option value="Epic">Epic</option><option value="Legendary">Legendary</option><option value="Mythic">Mythic</option><option value="Cosmic">Cosmic</option><option value="Secret">Secret</option><option value="Eternal">Eternal</option><option value="Divine">Divine</option></select><small class="field-hint">Huge, Mutated y las etiquetas de evento se registran aparte: no son rarezas base confirmadas.</small></div>
-                <div class="field"><label for="finderJobId">JOB ID DEL SERVIDOR (OPCIONAL)</label><input id="finderJobId" maxlength="80" placeholder="GUID del servidor"></div>
+                <div class="toolbar-wrap"><div class="field grow"><label for="finderZone">ZONA / EVENTO</label><input id="finderZone" maxlength="50" placeholder="Ej.: Haunted Swamp"></div><div class="field grow"><label for="finderWeight">PESO (KG, OPCIONAL)</label><input id="finderWeight" type="number" min="0" step="any" placeholder="Ej.: 125000"></div></div>
+                <div class="field"><label for="finderJobId">JOB ID DEL SERVIDOR (OPCIONAL)</label><input id="finderJobId" maxlength="36" placeholder="GUID del servidor"></div>
                 <div class="field"><label for="finderNotes">NOTAS</label><textarea id="finderNotes" rows="2" maxlength="180" placeholder="Valor, zona o detalle que viste..."></textarea></div>
                 <button class="primary-btn full-btn" type="submit">＋ Guardar hallazgo en este dispositivo</button>
               </form>
@@ -152,7 +153,8 @@
             </article>
             <article class="surface">
               <div class="card-heading"><div><span class="eyebrow">TU RADAR</span><h3>Hallazgos guardados</h3></div><span class="heading-icon">📡</span></div>
-              <div class="field"><label for="finderSearch">FILTRAR HALLAZGOS</label><input id="finderSearch" type="search" placeholder="Buscar huevo, rareza o nota..."></div>
+              <div class="field"><label for="finderSearch">FILTRAR HALLAZGOS</label><input id="finderSearch" type="search" placeholder="Buscar huevo, zona, peso o nota..."></div>
+              <div class="field"><label for="finderSort">ORDENAR HALLAZGOS</label><select id="finderSort"><option value="recent">Más recientes</option><option value="weight">Mayor peso primero</option></select></div>
               <div id="finderFeed" class="finder-feed"><div class="empty-state"><span>📡</span><b>Radar vacío</b><small>Cuando registres un hallazgo, aparecerá aquí.</small></div></div>
               <button class="text-btn" id="clearFinderReports" type="button">Borrar mis hallazgos</button>
             </article>
@@ -364,7 +366,7 @@
             <div class="lab-input-grid">
               <div class="field"><label for="playerSpeed">SPEED</label><input id="playerSpeed" type="number" min="0" step="any" placeholder="Ej. 125000"></div>
               <div class="field"><label for="playerCash">DINERO</label><input id="playerCash" type="number" min="0" step="any" placeholder="Ej. 2500000"></div>
-              <div class="field"><label for="playerRebirths">REBIRTHS</label><input id="playerRebirths" type="number" min="0" step="1" placeholder="Ej. 4"></div>
+              <div class="field"><label for="playerIncome">INGRESO DE MASCOTAS ($/s)</label><input id="playerIncome" type="number" min="0" step="any" placeholder="Ej. 125000"></div>
               <div class="field"><label for="playerBase">NIVEL DE BASE</label><input id="playerBase" type="number" min="0" step="1" placeholder="Ej. 12"></div>
               <div class="field"><label for="playerTreadmill">NIVEL DE CINTA</label><input id="playerTreadmill" type="number" min="0" step="1" placeholder="Ej. 8"></div>
               <div class="field"><label for="playerTrail">NIVEL DE TRAIL</label><input id="playerTrail" type="number" min="0" step="1" placeholder="Ej. 5"></div>
@@ -445,7 +447,7 @@
             <div class="setting-row"><div><b>Importar una copia</b><small>Restaura tus favoritos y registros desde un archivo JSON de Diego Hub.</small></div><button class="secondary-btn" id="importData">Importar JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
             <div class="setting-row"><div><b>Restablecer datos locales</b><small>Borra favoritos, historial y seguimiento guardado.</small></div><button class="danger-btn" id="resetData">Restablecer</button></div>
           </article>
-          <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 3.4</h3></div><span class="version-pill">v3.4</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 3.4</h3></div><span class="version-pill">v3.5</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
         </section>
       </div>
       <footer class="footer"><span>👑 DIEGO HUB</span><span>Hecho con la ayuda de ChatGPT 💜</span></footer>
