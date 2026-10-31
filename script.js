@@ -104,9 +104,9 @@ refreshZoneOptions();
 function eggStatusClass(status){return status==="Confirmado"?"confirmed":status==="Comunitario"?"community":"pending";}
 function renderEggs(){
  refreshZoneOptions();
- const query=$("eggSearch").value.trim().toLowerCase(), zone=zoneFilter.value, type=$("typeFilter").value, confidence=$("confidenceFilter").value, favoritesOnly=$("favoritesOnly").checked;
+ const query=$("eggSearch").value.trim().toLowerCase(), zone=zoneFilter.value, type=$("typeFilter").value, rarity=$("rarityFilter").value, confidence=$("confidenceFilter").value, favoritesOnly=$("favoritesOnly").checked;
  const catalog=allEggs();
- const found=catalog.filter(e=>(zone==="all"||e.zone===zone)&&(type==="all"||e.type===type)&&(confidence==="all"||e.status===confidence)&&(!favoritesOnly||state.favorites.has(e.name))&&[e.name,e.zone,e.guardian,e.note].join(" ").toLowerCase().includes(query));
+ const found=catalog.filter(e=>(zone==="all"||e.zone===zone)&&(type==="all"||e.type===type)&&(rarity==="all"||(e.rarity||"Sin confirmar")===rarity)&&(confidence==="all"||e.status===confidence)&&(!favoritesOnly||state.favorites.has(e.name))&&[e.name,e.zone,e.guardian,e.note,e.rarity||"Sin confirmar"].join(" ").toLowerCase().includes(query));
  $("eggCount").textContent=`${found.length} de ${catalog.length} entradas`;
  $("eggGrid").replaceChildren();
  if(!found.length){$("eggGrid").innerHTML='<div class="empty-state" style="grid-column:1/-1"><span>🔎</span><b>No hay coincidencias</b><small>Prueba otro nombre o filtro.</small></div>';return;}
@@ -119,7 +119,7 @@ function renderEggs(){
   top.append(emoji,fav);
   const title=document.createElement("h3");title.textContent=e.name;
   const meta=document.createElement("div");meta.className="egg-meta";
-  [["Zona",e.zone],["Speed",e.speed],["Guardián",e.guardian]].forEach(([k,v])=>{const p=document.createElement("p");p.innerHTML=`${k}: <b>${escapeHTML(v)}</b>`;meta.append(p);});
+  [["Zona",e.zone],["Rareza",e.rarity||"Sin confirmar"],["Speed",e.speed],["Guardián",e.guardian]].forEach(([k,v])=>{const p=document.createElement("p");p.innerHTML=`${k}: <b>${escapeHTML(v)}</b>`;meta.append(p);});
   const tag=document.createElement("span");tag.className="tag "+eggStatusClass(e.status);tag.textContent=e.status;
   const note=document.createElement("p");note.className="muted";note.style.fontSize="9px";note.textContent=e.note;
   card.append(top,title,meta,tag,note);
@@ -127,7 +127,7 @@ function renderEggs(){
   $("eggGrid").append(card);
  });
 }
-["eggSearch","zoneFilter","typeFilter","confidenceFilter","favoritesOnly"].forEach(id=>$(id).addEventListener(id==="eggSearch"?"input":"change",renderEggs));
+["eggSearch","zoneFilter","typeFilter","rarityFilter","confidenceFilter","favoritesOnly"].forEach(id=>$(id).addEventListener(id==="eggSearch"?"input":"change",renderEggs));
 function fillCompare(){
  ["compareA","compareB"].forEach(id=>{const s=$(id);s.replaceChildren();allEggs().forEach(e=>{const o=document.createElement("option");o.value=e.name;o.textContent=e.name;s.append(o);});});
  $("compareB").selectedIndex=Math.min(1,allEggs().length-1);
@@ -141,7 +141,7 @@ $("customEggForm").addEventListener("submit",e=>{
  }
  state.customEggs.unshift({
   id:"local-"+Date.now(),name,zone,guardian:$("customEggGuardian").value.trim()||"—",
-  type:$("customEggType").value,speed:$("customEggSpeed").value.trim()||"Sin confirmar",
+  type:$("customEggType").value,rarity:$("customEggRarity").value,speed:$("customEggSpeed").value.trim()||"Sin confirmar",
   status:"Por verificar",note:$("customEggNote").value.trim()||"Aporte local del jugador; pendiente de comprobación.",custom:true
  });
  $("customEggForm").reset();save();fillCompare();renderEggs();
