@@ -19,3 +19,40 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 
 /* Favorite server actions */
 .server-favorite.is-favorite{border-color:#a77be0;color:#e0c6ff;background:#291c3d}
+
+/* DIEGO HUB 3.0 — visual redesign */
+:root{--bg:#080b16;--panel:#101729;--panel2:#151f35;--line:#263653;--text:#f3f7ff;--muted:#9eacc5;--purple:#8b6cff;--purple2:#6246d9;--cyan:#53d9e8;--green:#56e0ad;--gold:#ffd078;--red:#ff718d;--radius:20px}
+body{background:radial-gradient(ellipse at 12% 0%,#263d7040,transparent 35%),radial-gradient(ellipse at 90% 10%,#623caa30,transparent 32%),var(--bg)}
+.sidebar{width:270px;flex-basis:270px;padding:24px 17px;background:linear-gradient(180deg,#0d1424,#0a101d);border-right-color:#263653aa}
+.brand-mark{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#8c79ff,#3f91c9);box-shadow:0 10px 30px #526ee955}
+.brand-copy strong{font-size:16px;letter-spacing:1.6px}.brand-copy small{letter-spacing:1.35px;color:#8da4c7}
+.profile-mini{background:linear-gradient(110deg,#1a2942,#151d32);border-color:#344a70;border-radius:16px;padding:13px}
+.avatar{background:linear-gradient(145deg,#4e9bd2,#6951c9);border-radius:12px}
+.nav-label{color:#7186a8;font-size:9px;letter-spacing:1.6px;padding:4px 11px 8px}.nav-group-label{margin-top:15px}
+.nav-btn{color:#aab8d0;border-radius:13px;padding:12px 13px;font-size:12px;gap:12px;min-height:43px}
+.nav-btn:hover{background:#1c2b45;color:white}
+.nav-btn.active{background:linear-gradient(100deg,#4b70bd55,#7054bd2c);color:#fff;box-shadow:inset 3px 0 #70c8f0,0 5px 18px #050a1740}
+.sidebar-note{background:#131e32;border-color:#2a3b5a}
+.topbar{background:#080d19ef;border-bottom-color:#293a58}.breadcrumb strong{color:#a9dfff}
+.version-pill{color:#a8e9f4;background:#3d9bb01a;border-color:#53c9df55}.version-pill i{background:var(--cyan);box-shadow:0 0 10px #53d9e8}
+.content{max-width:1400px;padding-top:36px}
+.hero{min-height:300px;border-color:#4b6a9a88;border-radius:26px;background:radial-gradient(circle at 78% 48%,#5a8bd044,transparent 28%),radial-gradient(circle at 95% 0%,#7956d044,transparent 35%),linear-gradient(120deg,#172844,#111a2e 64%,#17162f);box-shadow:0 22px 65px #02061155}
+.hero h1 span,.page-intro h1 span{color:#8bdcf0}.eyebrow{color:#8edcf0;letter-spacing:2px}.hero p,.page-intro p{color:#a9b8d0}
+.primary-btn{background:linear-gradient(110deg,#557fda,#7959db);box-shadow:0 8px 24px #456bc044}
+.secondary-btn{background:#1b2b46;border-color:#344e74;color:#e5efff}
+.surface{background:linear-gradient(145deg,#131f34,#10182a);border-color:#2a3d5e;border-radius:20px;box-shadow:0 12px 35px #02061126}
+.stat-card{background:linear-gradient(145deg,#192943,#121d31);border-color:#2b4164;border-radius:17px}
+.heading-icon{background:#4a75b522;color:#9bdcf1}.quick-item,.status-line{border-bottom-color:#293b59}.quick-icon{background:#203654}
+.field input,.field select,.field textarea,.inline-form input{background:#0b1424;border-color:#304363;border-radius:12px}
+.field input:focus,.field select:focus,.field textarea:focus,.inline-form input:focus{border-color:#65c8e4;box-shadow:0 0 0 3px #65c8e41b}
+.server-card,.egg-card,.history-item,.goal-row,.check-row,.finder-report{background:#111d31;border-color:#2b3f60;border-radius:15px}
+.empty-state{border-color:#3b5278;background:#0e192b}
+.tag.confirmed{background:#174c43;color:#8ef0cb}.tag.community{background:#574522;color:#ffe09a}.tag.pending{background:#493354;color:#e5b5f3}
+.progress-track{background:#273a59}.progress-track span{background:linear-gradient(90deg,#4da9d8,#9273ed)}
+.event-feature{background:radial-gradient(circle at 90% 10%,#5c91d533,transparent 38%),linear-gradient(120deg,#172844,#121b30)}
+.finder-hero{background:radial-gradient(circle at 90% 10%,#5b9ad52e,transparent 36%),#131f34}
+.finder-steps>div{background:#17253c;border-color:#304666}.setting-row{border-bottom-color:#2a3d5e}
+.switch input:checked+span{background:#568bd4}.footer{border-top-color:#263653;color:#7f91ad}
+.toast{background:#172943;border-color:#4e80bd}.nav-new{color:#a7eaff;border-color:#4c8fc1;background:#357da51a}
+.server-favorite.is-favorite{border-color:#70a7e4;color:#c4e8ff;background:#203c5c}
+@media(max-width:720px){.sidebar{background:linear-gradient(180deg,#0d1628,#09111f);border-right-color:#2a3d5e}.topbar{background:#080d19f5}.hero{border-radius:21px}.content{padding-top:22px}.surface{border-radius:17px}.nav-group-label{margin-top:11px}}
