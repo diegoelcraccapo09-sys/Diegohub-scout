@@ -510,7 +510,7 @@ $("calculateChance").addEventListener("click",()=>{
 $("calculateAttempts").addEventListener("click",()=>{
  const pct=labNumber("labChance"),target=labNumber("labTargetChance"),out=$("attemptsResult");
  if(pct===null||pct<=0||pct>100||target===null||target<=0||target>=100){out.textContent="Usa una probabilidad por hatch mayor que 0 y hasta 100%, y un objetivo entre 0 y 100% (sin incluir extremos).";return;}
- const attempts=Math.ceil(Math.log(1-target/100)/Math.log(1-pct/100));
+ const attempts=pct>=100?1:Math.ceil(Math.log(1-target/100)/Math.log(1-pct/100));
  out.textContent="Necesitas aproximadamente "+attempts.toLocaleString("es-UY")+" hatch(es) para alcanzar al menos "+target+"% de probabilidad. No es una garantía: cada intento sigue siendo aleatorio.";
 });
 $("calculateFarmIncome").addEventListener("click",()=>{
