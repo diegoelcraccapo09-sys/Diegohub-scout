@@ -146,6 +146,25 @@ function normalizeServer(s){
  const valid=Number.isFinite(playing)&&Number.isFinite(max)&&playing>=0&&max>0&&max>=playing;
  return {id:s.id,playing,max,free:valid?max-playing:-1,ping:Number.isFinite(ping)&&ping>=0?ping:null,valid};
 }
+function isValidJobId(value){
+ return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value||"").trim());
+}
+function openRobloxServer(jobId){
+ const id=String(jobId||"").trim();
+ if(!isValidJobId(id)){toast("El Job ID no tiene un formato válido.");return;}
+ const url=`https://www.roblox.com/games/start?placeId=${GAME_ID}&gameInstanceId=${encodeURIComponent(id)}`;
+ window.open(url,"_blank","noopener,noreferrer");
+}
+async function copyText(value){
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(String(value));}
+  else{
+   const field=document.createElement("textarea");field.value=String(value);field.style.position="fixed";field.style.opacity="0";document.body.append(field);field.select();
+   const copied=document.execCommand("copy");field.remove();if(!copied)throw new Error("copy failed");
+  }
+  toast("Job ID copiado.");
+ }catch{toast("No se pudo copiar. Mantén pulsado el Job ID para copiarlo.");}
+}
 function renderServers(){
  const sort=$("serverSort").value,filter=$("serverFilter").value;
  let arr=[...state.servers];
@@ -162,13 +181,20 @@ function renderServers(){
   const p1=document.createElement("p");p1.textContent=`👥 Jugadores: ${s.playing} / ${s.max}`;
   const p2=document.createElement("p");p2.textContent=`🟢 Espacios: ${s.valid?s.free:"Dato no válido"}`;
   const p3=document.createElement("p");p3.textContent=`📶 Ping informado: ${s.ping===null?"No disponible":s.ping+" ms"}`;
-  const join=document.createElement("button");join.className="secondary-btn join-btn";join.textContent="Abrir este servidor ↗";
-  join.addEventListener("click",()=>{const url=`https://www.roblox.com/games/start?placeId=${GAME_ID}&gameInstanceId=${encodeURIComponent(s.id)}`;window.open(url,"_blank","noopener,noreferrer");});
-  card.append(h,p1,p2,p3,join);list.append(card);
+  const actions=document.createElement("div");actions.className="server-actions";
+  const join=document.createElement("button");join.className="primary-btn";join.textContent="Abrir servidor ↗";join.type="button";
+  join.addEventListener("click",()=>openRobloxServer(s.id));
+  const copy=document.createElement("button");copy.className="secondary-btn";copy.textContent="Copiar Job ID";copy.type="button";
+  copy.addEventListener("click",()=>copyText(s.id));
+  actions.append(join,copy);
+  const idLabel=document.createElement("small");idLabel.className="server-job-id";idLabel.textContent="Job ID: "+s.id;
+  card.append(h,p1,p2,p3,idLabel,actions);list.append(card);
  });
  updateDashboard();
 }
 $("serverSort").addEventListener("change",renderServers);$("serverFilter").addEventListener("change",renderServers);
+$("joinJobId").addEventListener("click",()=>openRobloxServer($("jobIdInput").value));
+$("jobIdInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();openRobloxServer($("jobIdInput").value);}});
 async function fetchServerPage(){
  const wait=Math.max(0,REQUEST_GAP-(Date.now()-state.lastRequest));
  const cooldown=Math.max(0,state.rateLimitUntil-Date.now());
@@ -200,13 +226,13 @@ async function searchServerPage(reset){
  try{
   const data=await fetchServerPage();
   if(reset){state.seen.clear();state.servers=[];}
-  let added=0;
-  for(const s of data.data){if(s.id&&!state.seen.has(s.id)){state.seen.add(s.id);state.servers.push(normalizeServer(s));added++;}}
+  const addedServers=[];
+  for(const s of data.data){if(s.id&&!state.seen.has(s.id)){state.seen.add(s.id);const normalized=normalizeServer(s);state.servers.push(normalized);addedServers.push(normalized);}}
   state.cursor=data.nextPageCursor||null;
-  if(added===0){$("serverStatus").textContent="No llegaron servidores nuevos en esta página.";return;}
+  if(addedServers.length===0){$("serverStatus").textContent="No llegaron servidores nuevos en esta página.";return;}
   renderServers();
-  const valid=state.servers.filter(s=>s.valid);
-  state.history.unshift({date:new Date().toLocaleString("es-UY"),total:added,free:valid.filter(s=>s.free>0).length,full:valid.filter(s=>s.free===0).length});
+  const validAdded=addedServers.filter(s=>s.valid);
+  state.history.unshift({date:new Date().toLocaleString("es-UY"),total:addedServers.length,free:validAdded.filter(s=>s.free>0).length,full:validAdded.filter(s=>s.free===0).length});
   state.history=state.history.slice(0,10);persist();renderHistory();
   $("serverStatus").textContent=`✅ Se añadieron ${added} servidores. Total acumulado: ${state.servers.length}.`;
  }catch(err){if(reset)state.cursor=previousCursor;$("serverStatus").textContent="❌ "+err.message;toast("No se pudo completar la búsqueda.");}
@@ -238,8 +264,7 @@ function renderSightings(){
   row.append(info,del);box.append(row);
  });
 }
-$("sightingForm").addEventListener("submit",e=>{e.preventDefault();state.sightings.unshift({id:Date.now(),egg:$("sightingEgg").value.trim(),zone:$("sightingZone").value.trim(),notes:$("sightingNotes").value.trim(),date:new Date().toLocaleString("es-UY")});$("sightingForm").reset();save();renderSightings();to
-ast("Hallazgo guardado.");});
+$("sightingForm").addEventListener("submit",e=>{e.preventDefault();state.sightings.unshift({id:Date.now(),egg:$("sightingEgg").value.trim(),zone:$("sightingZone").value.trim(),notes:$("sightingNotes").value.trim(),date:new Date().toLocaleString("es-UY")});$("sightingForm").reset();save();renderSightings();toast("Hallazgo guardado.");});
 $("clearSightings").addEventListener("click",()=>{if(!confirmAction("¿Borrar todos los hallazgos de la bitácora?"))return;state.sightings=[];save();renderSightings();});
 
 function renderFinder(){
