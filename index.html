@@ -13,7 +13,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark">👑</div>
-        <div class="brand-copy"><strong>DIEGO HUB</strong><small>STEAL AN EGG · v3.0</small></div>
+        <div class="brand-copy"><strong>DIEGO HUB</strong><small>STEAL AN EGG · v3.1</small></div>
         <button class="icon-btn close-sidebar" id="closeSidebar" aria-label="Cerrar menú">✕</button>
       </div>
       <div class="profile-mini">
@@ -28,6 +28,8 @@
         <button class="nav-btn" data-tab="servidores"><span>🌐</span> Servidores</button>
         <button class="nav-btn" data-tab="finder"><span>📡</span> Egg Finder <em class="nav-new">BETA</em></button>
         <button class="nav-btn" data-tab="huevos"><span>🥚</span> Catálogo</button>
+        <button class="nav-btn" data-tab="mascotas"><span>🐾</span> Mascotas</button>
+        <button class="nav-btn" data-tab="laboratorio"><span>🧪</span> Laboratorio <em class="nav-new">NUEVO</em></button>
         <span class="nav-label nav-group-label">PROGRESO Y REGISTROS</span>
         <button class="nav-btn" data-tab="rastreador"><span>🎯</span> Bitácora</button>
         <button class="nav-btn" data-tab="ruta"><span>⚡</span> Farm & progreso</button>
@@ -46,7 +48,7 @@
         <button class="icon-btn menu-btn" id="openSidebar" aria-label="Abrir menú">☰</button>
         <div class="breadcrumb"><span>Diego Hub</span><b>/</b><strong id="pageTitle">Inicio</strong></div>
         <div class="top-actions">
-          <span class="version-pill"><i></i> v3.0</span>
+          <span class="version-pill"><i></i> v3.1</span>
           <button class="icon-btn" id="minimizeHub" title="Minimizar panel" aria-label="Minimizar panel">－</button>
         </div>
       </header>
@@ -191,6 +193,87 @@
           </article>
         </section>
 
+        <section class="panel" id="mascotas">
+          <div class="page-intro"><span class="eyebrow">BASE DE DATOS</span><h1>Catálogo de <span>mascotas</span></h1><p>Busca mascotas, compara su rareza y consulta su ingreso base por segundo.</p></div>
+          <article class="surface">
+            <div class="field"><label for="petSearch">BUSCAR MASCOTA O ZONA</label><input id="petSearch" type="search" placeholder="Ej.: Chicken, Forest, Fox..."></div>
+            <div class="toolbar-wrap filters">
+              <div class="field grow"><label for="petRarityFilter">RAREZA</label><select id="petRarityFilter"><option value="all">Todas las rarezas</option><option>Common</option><option>Uncommon</option><option>Rare</option><option>Epic</option><option>Legendary</option><option>Mythic</option><option>Cosmic</option><option>Secret</option><option>Eternal</option><option>Divine</option><option>Sin confirmar</option></select></div>
+              <div class="field grow"><label for="petSort">ORDENAR POR</label><select id="petSort"><option value="name">Nombre</option><option value="income-desc">Mayor ingreso</option><option value="income-asc">Menor ingreso</option></select></div>
+            </div>
+            <div class="catalog-summary"><span id="petCount">Mascotas</span><span class="muted">Datos comunitarios · base sin mutaciones</span></div>
+            <div class="egg-grid" id="petGrid"></div>
+          </article>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">CÓMO LEER LOS VALORES</span><h3>Ingreso base y mutaciones</h3></div><span class="heading-icon">💰</span></div>
+            <p class="muted">El ingreso mostrado es una referencia base de comunidad. El tamaño y las mutaciones pueden modificar lo que produce una mascota. Comprueba siempre el valor que aparece en tu partida.</p>
+            <p class="muted">La lista inicial es pequeña y no representa todas las mascotas del juego. La iremos ampliando y etiquetando según la calidad de la información.</p>
+          </article>
+        </section>
+
+        <section class="panel" id="laboratorio">
+          <div class="page-intro"><span class="eyebrow">CENTRO DE CÁLCULO</span><h1>Laboratorio <span>pro</span></h1><p>Calcula ingresos, tamaño, mutaciones, probabilidades y rendimiento de tus sesiones. Todo funciona localmente, sin tocar Roblox.</p></div>
+          <article class="surface lab-feature">
+            <div class="card-heading"><div><span class="eyebrow">CALCULADORA AVANZADA</span><h3>Ingreso real de una mascota</h3></div><span class="heading-icon">💰</span></div>
+            <p class="muted">Introduce los valores base de una mascota, su peso base y su peso actual. La fórmula comunitaria aplica el crecimiento por tamaño y una mutación conocida. Si no conoces el peso base, déjalo vacío y se calculará solo con el ingreso base y la mutación.</p>
+            <div class="lab-input-grid">
+              <div class="field"><label for="labBaseIncome">INGRESO BASE ($/s)</label><input id="labBaseIncome" type="number" min="0" step="any" placeholder="Ej.: 1800000000"></div>
+              <div class="field"><label for="labBaseWeight">PESO BASE (KG)</label><input id="labBaseWeight" type="number" min="0" step="any" placeholder="Opcional; ej.: 260"></div>
+              <div class="field"><label for="labCurrentWeight">PESO ACTUAL (KG)</label><input id="labCurrentWeight" type="number" min="0" step="any" placeholder="Opcional; ej.: 2600"></div>
+              <div class="field"><label for="labMutation">MUTACIÓN</label><select id="labMutation"><option value="1">Normal ×1</option><option value="1.2">Silver ×1.2</option><option value="1.25">Bloom ×1.25</option><option value="2.5">Golden ×2.5</option><option value="2.5">Spirit Bloom ×2.5</option><option value="2.75">Fractured ×2.75</option><option value="2.75">Scrambled ×2.75</option><option value="3">Parasite ×3</option><option value="3.5">Rainbow ×3.5</option><option value="unknown" disabled>Nitro / Enchanted / Spectral / Zombified: multiplicador sin verificar</option></select></div>
+            </div>
+            <button class="primary-btn" id="calculatePetIncome">Calcular ingreso</button>
+            <div class="lab-result" id="petIncomeResult" role="status">Completa el ingreso base para calcular.</div>
+            <small class="muted">Fórmula de referencia comunitaria: hasta 125× del peso base usa exponente 37/60; por encima, el crecimiento se ralentiza. Las mutaciones se aplican después del tamaño. No se adivinan multiplicadores desconocidos ni reglas para combinar varias mutaciones. Fuentes comunitarias: <a href="https://stealaneggindex.com/calculator" target="_blank" rel="noopener noreferrer">fórmula de ingresos</a> · <a href="https://stealaneggindex.com/mutations" target="_blank" rel="noopener noreferrer">mutaciones</a> (datos sincronizados el 28/10/2026).</small>
+          </article>
+          <div class="two-col">
+            <article class="surface">
+              <div class="card-heading"><div><span class="eyebrow">PROBABILIDAD</span><h3>Calculadora de hatch</h3></div><span class="heading-icon">🎲</span></div>
+              <p class="muted">Calcula la posibilidad de obtener al menos un resultado con una probabilidad por intento conocida.</p>
+              <div class="field"><label for="labChance">PROBABILIDAD POR HATCH (%)</label><input id="labChance" type="number" min="0.000001" max="100" step="any" value="1"></div>
+              <div class="field"><label for="labAttempts">CANTIDAD DE HATCHES</label><input id="labAttempts" type="number" min="1" step="1" value="100"></div>
+              <button class="primary-btn" id="calculateChance">Calcular probabilidad</button>
+              <div class="lab-result" id="chanceResult" role="status">Introduce una probabilidad y cantidad de intentos.</div>
+              <div class="field"><label for="labTargetChance">OBJETIVO DE PROBABILIDAD (%)</label><input id="labTargetChance" type="number" min="0.01" max="99.99" step="any" value="50"></div>
+              <button class="secondary-btn" id="calculateAttempts">¿Cuántos hatch necesito?</button>
+              <p class="status-text" id="attemptsResult" role="status">Calcula los intentos aproximados para alcanzar tu objetivo.</p>
+            </article>
+            <article class="surface">
+              <div class="card-heading"><div><span class="eyebrow">ECONOMÍA</span><h3>Proyección de ingresos</h3></div><span class="heading-icon">📈</span></div>
+              <p class="muted">Suma el ingreso por segundo de todas tus mascotas y estima cuánto producirían durante una sesión.</p>
+              <div class="field"><label for="labTotalIncome">INGRESO TOTAL DE TU BASE ($/s)</label><input id="labTotalIncome" type="number" min="0" step="any" placeholder="Ej.: 2500000"></div>
+              <div class="field"><label for="labSessionMinutes">DURACIÓN DE LA SESIÓN (MINUTOS)</label><input id="labSessionMinutes" type="number" min="0" step="any" value="60"></div>
+              <button class="primary-btn" id="calculateFarmIncome">Proyectar ganancias</button>
+              <div class="lab-result" id="farmIncomeResult" role="status">Introduce tu ingreso total por segundo.</div>
+              <small class="muted">Es una proyección matemática: no contempla límites del juego, pausas, mejoras ni cambios en las mascotas.</small>
+            </article>
+          </div>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">RUTA INTELIGENTE</span><h3>Planificador de objetivo</h3></div><span class="heading-icon">🧭</span></div>
+            <p class="muted">Calcula cuánto te falta para una zona y una estimación de pasos de cinta con los valores que tú observes en el juego.</p>
+            <div class="lab-input-grid">
+              <div class="field"><label for="labCurrentSpeed">SPEED ACTUAL</label><input id="labCurrentSpeed" type="number" min="0" step="any" placeholder="Ej.: 10000"></div>
+              <div class="field"><label for="labTargetSpeed">SPEED OBJETIVO</label><input id="labTargetSpeed" type="number" min="0" step="any" placeholder="Ej.: 40000"></div>
+              <div class="field"><label for="labStepGain">SPEED POR PASO (ANTES DEL TRAIL)</label><input id="labStepGain" type="number" min="0.0001" step="any" value="2"></div>
+              <div class="field"><label for="labTrailGain">MULTIPLICADOR DEL TRAIL</label><select id="labTrailGain"><option value="1">Sin trail ×1</option><option value="1.5">Grey ×1.5</option><option value="2">Green ×2</option><option value="2.5">Blue ×2.5</option><option value="3">Purple ×3</option><option value="3.5">Golden ×3.5</option><option value="4">Red ×4</option><option value="5">Galaxy ×5</option><option value="7">Secret ×7</option><option value="10">Eternal ×10</option><option value="14">Divine ×14</option><option value="20">Moonbloom ×20</option></select></div>
+            </div>
+            <button class="primary-btn" id="calculateRoutePlan">Calcular mi ruta</button>
+            <div class="lab-result" id="routePlanResult" role="status">Completa los valores para estimar los pasos.</div>
+            <small class="muted">La estimación supone que el multiplicador del trail se aplica a cada paso. Confirma el incremento real de tu cinta antes de tomar decisiones.</small>
+          </article>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">HERRAMIENTAS DEL HUB</span><h3>Panel de funciones</h3></div><span class="heading-icon">🛠️</span></div>
+            <div class="lab-feature-grid">
+              <div><b>📡 Finder comunitario</b><small>Guarda avistamientos y Job IDs manualmente. No detecta huevos globalmente ni en tiempo real.</small><button class="text-btn" data-go="finder">Abrir Finder →</button></div>
+              <div><b>🌐 Explorador de servidores</b><small>Consulta servidores públicos, ordena por espacios y abre o copia un Job ID.</small><button class="text-btn" data-go="servidores">Abrir servidores →</button></div>
+              <div><b>🐾 Catálogo de mascotas</b><small>Busca por nombre, rareza, zona e ingreso base. Los datos comunitarios se identifican como tales.</small><button class="text-btn" data-go="mascotas">Abrir mascotas →</button></div>
+              <div><b>🥚 Catálogo de huevos</b><small>Filtra por zona, rareza y estado; compara y guarda favoritos.</small><button class="text-btn" data-go="huevos">Abrir catálogo →</button></div>
+              <div><b>🎯 Bitácora y objetivos</b><small>Registra hallazgos y lleva un seguimiento de tus metas personales.</small><button class="text-btn" data-go="rastreador">Abrir bitácora →</button></div>
+              <div><b>⚙ Copias de seguridad</b><small>Exporta e importa tus registros locales desde Configuración.</small><button class="text-btn" data-go="ajustes">Abrir ajustes →</button></div>
+            </div>
+          </article>
+        </section>
+
         <section class="panel" id="rastreador">
           <div class="page-intro"><span class="eyebrow">SEGUIMIENTO PERSONAL</span><h1>Rastreador <span>manual</span></h1><p>Registra huevos que viste, zonas que visitaste y objetivos que quieres completar.</p></div>
           <div class="two-col">
@@ -257,7 +340,7 @@
             <div class="setting-row"><div><b>Importar una copia</b><small>Restaura tus favoritos y registros desde un archivo JSON de Diego Hub.</small></div><button class="secondary-btn" id="importData">Importar JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
             <div class="setting-row"><div><b>Restablecer datos locales</b><small>Borra favoritos, historial y seguimiento guardado.</small></div><button class="danger-btn" id="resetData">Restablecer</button></div>
           </article>
-          <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 3.0</h3></div><span class="version-pill">v3.0</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 3.1</h3></div><span class="version-pill">v3.1</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
         </section>
       </div>
       <footer class="footer"><span>👑 DIEGO HUB</span><span>Hecho con la ayuda de ChatGPT 💜</span></footer>

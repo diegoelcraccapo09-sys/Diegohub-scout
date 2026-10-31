@@ -46,7 +46,7 @@ function save() { persist(); updateDashboard(); }
 
 const panels = [...document.querySelectorAll(".panel")];
 const navButtons = [...document.querySelectorAll(".nav-btn")];
-const titles = {inicio:"Inicio",servidores:"Servidores",finder:"Finder",huevos:"Buscador de huevos",rastreador:"Rastreador",ruta:"Plan de progreso",recompensas:"Eventos y recompensas",ajustes:"Configuración"};
+const titles = {inicio:"Inicio",servidores:"Servidores",finder:"Finder",huevos:"Buscador de huevos",laboratorio:"Laboratorio",rastreador:"Rastreador",ruta:"Plan de progreso",recompensas:"Eventos y recompensas",ajustes:"Configuración"};
 function go(tab) {
   if (!titles[tab]) return;
   state.tab = tab;
@@ -91,6 +91,38 @@ const eggs = [
  {name:"Rift Eggs",zone:"Rift",speed:"Evento",guardian:"—",type:"Evento",status:"Por verificar",note:"Hay reportes de varios grupos de huevos de Rift; nombres exactos no cargados."},
  {name:"Titan Temple Egg",zone:"Titan Temple",speed:"Consultar",guardian:"Gorilla King",type:"Especial",status:"Comunitario",note:"La zona Titan Temple aparece en guías comunitarias; confirmar etiqueta y acceso dentro del juego."}
 ];
+const pets = [
+ {name:"Chicken",rarity:"Common",zone:"Forest",income:1,incomeLabel:"$1/s",status:"Comunitario"},
+ {name:"Dog",rarity:"Common",zone:"Forest",income:2,incomeLabel:"$2/s",status:"Comunitario"},
+ {name:"Bird",rarity:"Uncommon",zone:"Forest",income:8,incomeLabel:"$8/s",status:"Comunitario"},
+ {name:"Burrowing Owl",rarity:"Rare",zone:"Forest",income:35,incomeLabel:"$35/s",status:"Comunitario"},
+ {name:"Raccoon",rarity:"Rare",zone:"Forest",income:45,incomeLabel:"$45/s",status:"Comunitario"},
+ {name:"Fox",rarity:"Epic",zone:"Forest",income:180,incomeLabel:"$180/s",status:"Comunitario"},
+ {name:"Bear",rarity:"Epic",zone:"Forest",income:240,incomeLabel:"$240/s",status:"Comunitario"},
+ {name:"Brr Brr Patapim",rarity:"Legendary",zone:"Forest",income:1800,incomeLabel:"$1.8K/s",status:"Comunitario"}
+];
+function renderPets(){
+ const query=$("petSearch").value.trim().toLowerCase(), rarity=$("petRarityFilter").value, sort=$("petSort").value;
+ const found=pets.filter(p=>(rarity==="all"||p.rarity===rarity)&&[p.name,p.zone,p.rarity,p.incomeLabel].join(" ").toLowerCase().includes(query));
+ if(sort==="income-desc")found.sort((a,b)=>b.income-a.income);
+ else if(sort==="income-asc")found.sort((a,b)=>a.income-b.income);
+ else found.sort((a,b)=>a.name.localeCompare(b.name));
+ $("petCount").textContent=`${found.length} de ${pets.length} mascotas cargadas`;
+ $("petGrid").replaceChildren();
+ if(!found.length){$("petGrid").innerHTML='<div class="empty-state" style="grid-column:1/-1"><span>🐾</span><b>No hay coincidencias</b><small>Prueba otro nombre o rareza.</small></div>';return;}
+ found.forEach(p=>{
+  const card=document.createElement("article");card.className="egg-card";
+  const top=document.createElement("div");top.className="egg-card-top";
+  const emoji=document.createElement("span");emoji.className="egg-emoji";emoji.textContent="🐾";
+  top.append(emoji);
+  const title=document.createElement("h3");title.textContent=p.name;
+  const meta=document.createElement("div");meta.className="egg-meta";
+  [["Rareza",p.rarity],["Zona",p.zone],["Ingreso base",p.incomeLabel]].forEach(([k,v])=>{const row=document.createElement("p");row.innerHTML=`${k}: <b>${escapeHTML(v)}</b>`;meta.append(row);});
+  const tag=document.createElement("span");tag.className="tag community";tag.textContent=p.status;
+  card.append(top,title,meta,tag);$("petGrid").append(card);
+ });
+}
+["petSearch","petRarityFilter","petSort"].forEach(id=>$(id).addEventListener(id==="petSearch"?"input":"change",renderPets));
 const zoneFilter = $("zoneFilter");
 function allEggs(){return [...eggs,...state.customEggs];}
 function refreshZoneOptions(){
@@ -433,12 +465,73 @@ $("resetData").addEventListener("click",()=>{
  toast("Datos locales restablecidos.");
 });
 
+
+function formatGameNumber(value){
+ if(!Number.isFinite(value))return "No disponible";
+ const abs=Math.abs(value);
+ if(abs>=1e12)return (value/1e12).toLocaleString("es-UY",{maximumFractionDigits:2})+"T";
+ if(abs>=1e9)return (value/1e9).toLocaleString("es-UY",{maximumFractionDigits:2})+"B";
+ if(abs>=1e6)return (value/1e6).toLocaleString("es-UY",{maximumFractionDigits:2})+"M";
+ if(abs>=1e3)return (value/1e3).toLocaleString("es-UY",{maximumFractionDigits:2})+"K";
+ return value.toLocaleString("es-UY",{maximumFractionDigits:2});
+}
+function labNumber(id){
+ const raw=$(id).value.trim();
+ if(raw==="")return null;
+ const n=Number(raw);
+ return Number.isFinite(n)?n:null;
+}
+function sizeIncomeMultiplier(weight,baseWeight){
+ if(!(weight>0)||!(baseWeight>0))return 1;
+ const ratio=weight/baseWeight;
+ if(ratio<=0)return 1;
+ if(ratio<=125)return Math.pow(ratio,37/60);
+ return Math.pow(ratio,2/5)*Math.pow(125,13/60);
+}
+$("calculatePetIncome").addEventListener("click",()=>{
+ const base=labNumber("labBaseIncome"),baseWeight=labNumber("labBaseWeight"),weight=labNumber("labCurrentWeight"),mutation=Number($("labMutation").value);
+ const out=$("petIncomeResult");
+ if(base===null||base<0||!(mutation>0)){out.textContent="Introduce un ingreso base válido y una mutación conocida.";return;}
+ if((weight!==null&&weight<=0)||(baseWeight!==null&&baseWeight<=0)){out.textContent="Los pesos deben ser mayores que cero. Si no conoces uno, déjalo vacío.";return;}
+ if(weight!==null&&baseWeight===null){out.textContent="Para calcular el tamaño necesitas introducir también el peso base.";return;}
+ const size=sizeIncomeMultiplier(weight,baseWeight),income=base*size*mutation;
+ out.textContent="Ingreso estimado: $"+formatGameNumber(income)+"/s · Tamaño ×"+size.toLocaleString("es-UY",{maximumFractionDigits:3})+" · Mutación ×"+mutation+" · Total por hora: $"+formatGameNumber(income*3600)+".";
+});
+function hatchProbability(pct,attempts){
+ const p=pct/100;
+ return 1-Math.pow(1-p,attempts);
+}
+$("calculateChance").addEventListener("click",()=>{
+ const pct=labNumber("labChance"),attempts=labNumber("labAttempts"),out=$("chanceResult");
+ if(pct===null||pct<=0||pct>100||attempts===null||attempts<1||!Number.isInteger(attempts)){out.textContent="La probabilidad debe ser mayor que 0 y hasta 100%; los intentos deben ser un entero positivo.";return;}
+ const chance=hatchProbability(pct,attempts)*100;
+ out.textContent="Probabilidad de conseguir al menos uno: "+chance.toLocaleString("es-UY",{maximumFractionDigits:4})+"% en "+attempts.toLocaleString("es-UY")+" intentos. Probabilidad de no conseguir ninguno: "+(100-chance).toLocaleString("es-UY",{maximumFractionDigits:4})+"%.";
+});
+$("calculateAttempts").addEventListener("click",()=>{
+ const pct=labNumber("labChance"),target=labNumber("labTargetChance"),out=$("attemptsResult");
+ if(pct===null||pct<=0||pct>100||target===null||target<=0||target>=100){out.textContent="Usa una probabilidad por hatch mayor que 0 y hasta 100%, y un objetivo entre 0 y 100% (sin incluir extremos).";return;}
+ const attempts=pct>=100?1:Math.ceil(Math.log(1-target/100)/Math.log(1-pct/100));
+ out.textContent="Necesitas aproximadamente "+attempts.toLocaleString("es-UY")+" hatch(es) para alcanzar al menos "+target+"% de probabilidad. No es una garantía: cada intento sigue siendo aleatorio.";
+});
+$("calculateFarmIncome").addEventListener("click",()=>{
+ const income=labNumber("labTotalIncome"),minutes=labNumber("labSessionMinutes"),out=$("farmIncomeResult");
+ if(income===null||income<0||minutes===null||minutes<0){out.textContent="Introduce ingresos y duración válidos, iguales o mayores que cero.";return;}
+ const total=income*minutes*60;
+ out.textContent="Estimación: $"+formatGameNumber(total)+" en "+minutes.toLocaleString("es-UY")+" minutos · $"+formatGameNumber(income*3600)+" por hora · $"+formatGameNumber(income*86400)+" por 24 horas.";
+});
+$("calculateRoutePlan").addEventListener("click",()=>{
+ const current=labNumber("labCurrentSpeed"),target=labNumber("labTargetSpeed"),gain=labNumber("labStepGain"),trail=Number($("labTrailGain").value),out=$("routePlanResult");
+ if(current===null||target===null||gain===null||current<0||target<0||gain<=0||!(trail>0)){out.textContent="Completa Speed actual, Speed objetivo y ganancia por paso con valores válidos.";return;}
+ const diff=Math.max(0,target-current),perStep=gain*trail,steps=Math.ceil(diff/perStep);
+ out.textContent=diff===0?"¡Ya alcanzaste o superaste tu objetivo!": "Te faltan "+formatGameNumber(diff)+" Speed. Ganancia estimada por paso: "+formatGameNumber(perStep)+". Necesitarías aproximadamente "+steps.toLocaleString("es-UY")+" pasos.";
+});
+
 function initialize(){
  load();
  $("reducedMotion").checked=!!state.settings.reducedMotion;
  $("confirmDelete").checked=!!state.settings.confirmDelete;
  document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
- fillCompare();renderEggs();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();updateDashboard();
+ fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderServers();updateDashboard();
 }
 initialize();
 })();
