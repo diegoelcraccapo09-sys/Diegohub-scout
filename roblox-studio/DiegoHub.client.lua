@@ -104,6 +104,7 @@ local function card(parent: Instance, height: number?): Frame
 		PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8),
 		PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10),
 	}, result)
+	make("UIListLayout", {Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder}, result)
 	return result
 end
 
