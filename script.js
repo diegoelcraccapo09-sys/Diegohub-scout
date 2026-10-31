@@ -407,24 +407,28 @@ function renderFarmSession(){
  $("farmTimer").textContent=formatFarmTime(elapsed);
  $("farmEarnings").textContent="$"+formatGameNumber(rate*elapsed/1000);
  $("farmTargetStatus").textContent=target?Math.min(100,elapsed/(target*60000)*100).toFixed(0)+"%":"Sin objetivo";
- $("farmIncomeRate").value=state.settings.farmIncomeRate??"";
- $("farmTargetMinutes").value=state.settings.farmTargetMinutes??"";
+ const incomeInput=$("farmIncomeRate"),targetInput=$("farmTargetMinutes");
+ if(document.activeElement!==incomeInput)incomeInput.value=state.settings.farmIncomeRate??"";
+ if(document.activeElement!==targetInput)targetInput.value=state.settings.farmTargetMinutes??"";
  const running=session?.status==="running",paused=session?.status==="paused";
  $("farmStart").disabled=running;
  $("farmPause").disabled=!session||(!running&&!paused);
  $("farmPause").textContent=running?"⏸ Pausar":"▶ Reanudar";
  $("farmFinish").disabled=!session;
  $("farmSessionStatus").textContent=running?"Sesión en curso. El contador sigue aunque cambies de pestaña o recargues el panel.":paused?"Sesión pausada. Puedes reanudarla o finalizarla.":session?.status==="finished"?"Última sesión guardada. Puedes iniciar otra cuando quieras.":"Listo. Configura tus datos y comienza a jugar.";
- const box=$("farmHistory");box.replaceChildren();
- const history=state.settings.farmHistory||[];
- if(!history.length){box.innerHTML='<div class="empty-state"><small>Tus sesiones completadas aparecerán aquí.</small></div>';return;}
- history.slice(0,5).forEach(item=>{
-  const row=document.createElement("div");row.className="history-item";
-  const info=document.createElement("div"),title=document.createElement("b"),detail=document.createElement("small");
-  title.textContent=formatFarmTime(item.elapsedMs)+" · $"+formatGameNumber(item.earnings||0);
-  detail.textContent=(item.date||"Fecha desconocida")+" · "+(item.rate>0?"$"+formatGameNumber(item.rate)+"/s":"Ingreso no configurado");
-  info.append(title,detail);row.append(info);box.append(row);
- });
+ const box=$("farmHistory"),history=state.settings.farmHistory||[];
+ const signature=JSON.stringify(history.slice(0,5));
+ if(box.dataset.signature!==signature){
+  box.dataset.signature=signature;box.replaceChildren();
+  if(!history.length){box.innerHTML='<div class="empty-state"><small>Tus sesiones completadas aparecerán aquí.</small></div>';}
+  else history.slice(0,5).forEach(item=>{
+   const row=document.createElement("div");row.className="history-item";
+   const info=document.createElement("div"),title=document.createElement("b"),detail=document.createElement("small");
+   title.textContent=formatFarmTime(item.elapsedMs)+" · $"+formatGameNumber(item.earnings||0);
+   detail.textContent=(item.date||"Fecha desconocida")+" · "+(item.rate>0?"$"+formatGameNumber(item.rate)+"/s":"Ingreso no configurado");
+   info.append(title,detail);row.append(info);box.append(row);
+  });
+ }
 }
 $("farmIncomeRate").addEventListener("input",e=>{state.settings.farmIncomeRate=e.target.value;persist();renderFarmSession();});
 $("farmTargetMinutes").addEventListener("input",e=>{state.settings.farmTargetMinutes=e.target.value;persist();renderFarmSession();});
