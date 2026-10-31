@@ -136,12 +136,12 @@ end
 
 local function renderHome()
 	heading("Panel principal", "Base funcional para una experiencia propia de Roblox.")
-	local profile = card(content, 76)
+	local profile = card(content, 84)
 	label(profile, "JUGADOR", 10, C.muted, 17)
 	label(profile, player.DisplayName .. "  @" .. player.Name, 15, C.text, 24).Font = Enum.Font.GothamBold
 	label(profile, "Diego Hub Studio Edition · interfaz local", 10, C.muted, 18)
 
-	local stats = card(content, 78)
+	local stats = card(content, 84)
 	label(stats, "ESTADO DEL PERSONAJE", 10, C.muted, 17)
 	local statText = label(stats, "Cargando personaje...", 12, C.text, 42)
 	local function updateStats()
@@ -159,7 +159,7 @@ local function renderHome()
 		if statText.Parent then updateStats() end
 	end)
 
-	local note = card(content, 74)
+	local note = card(content, 80)
 	label(note, "IMPORTANTE", 10, C.gold, 17)
 	label(note, "No lee datos privados de otros juegos ni ejecuta acciones en experiencias ajenas.", 11, C.muted, 42)
 end
@@ -171,7 +171,7 @@ local function renderCatalog()
 		{"Huevo brillante", "Categoría: especial · Ejemplo local"},
 		{"Mascota guardiana", "Tipo: compañero · Ejemplo local"},
 	}) do
-		local item = card(content, 58)
+		local item = card(content, 62)
 		label(item, entry[1], 13, C.text, 22).Font = Enum.Font.GothamBold
 		label(item, entry[2], 10, C.muted, 18)
 	end
@@ -179,7 +179,7 @@ end
 
 local function renderCalculator()
 	heading("Calculadora de probabilidad", "Intentos aproximados según una probabilidad introducida.")
-	local box = card(content, 116)
+	local box = card(content, 148)
 	label(box, "Probabilidad por intento (%)", 11, C.muted, 20)
 	local input = make("TextBox", {
 		Size = UDim2.new(1, 0, 0, 32), BackgroundColor3 = C.bg, BorderSizePixel = 0,
@@ -198,7 +198,7 @@ local function renderCalculator()
 		local attempts = p == 1 and 1 or math.ceil(math.log(0.5) / math.log(1 - p))
 		output.Text = string.format("Aproximadamente %d intentos para alcanzar un 50%% acumulado.", attempts)
 	end)
-	local note = card(content, 56)
+	local note = card(content, 60)
 	label(note, "Estimación matemática; no es una predicción ni una garantía.", 10, C.muted, 38)
 end
 
@@ -209,7 +209,7 @@ local function renderProgress()
 		"Probar la interfaz en móvil", "Conectar datos validados desde el servidor",
 	}
 	for _, taskName in ipairs(tasks) do
-		local item = card(content, 48)
+		local item = card(content, 56)
 		local button = actionButton(item, (progressDone[taskName] and "✓  " or "○  ") .. taskName, function()
 			progressDone[taskName] = not progressDone[taskName]
 			renderProgress()
@@ -223,7 +223,7 @@ end
 
 local function renderSettings()
 	heading("Ajustes", "Preferencias de esta interfaz.")
-	local about = card(content, 74)
+	local about = card(content, 82)
 	label(about, "DIEGO HUB · STUDIO EDITION", 11, C.gold, 20)
 	label(about, "Versión inicial · sin cargadores remotos, credenciales ni acceso a cuentas.", 10, C.muted, 40)
 end
