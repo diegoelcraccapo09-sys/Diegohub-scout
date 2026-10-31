@@ -22,8 +22,10 @@ function load() {
   state.finderReports = Array.isArray(saved.finderReports) ? saved.finderReports : [];
   state.customEggs = Array.isArray(saved.customEggs) ? saved.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string") : [];
   state.checks = saved.checks || {};
-  state.playerProfile = saved.playerProfile && typeof saved.playerProfile === "object" ? saved.playerProfile : {};
-  state.playerHistory = Array.isArray(saved.playerHistory) ? saved.playerHistory.slice(0,30) : [];
+  const savedProfile = saved.playerProfile && typeof saved.playerProfile === "object" && !Array.isArray(saved.playerProfile) ? saved.playerProfile : {};
+  const {rebirths: ignoredRebirths, ...currentProfile} = savedProfile;
+  state.playerProfile = currentProfile;
+  state.playerHistory = Array.isArray(saved.playerHistory) ? saved.playerHistory.filter(entry=>entry&&typeof entry==="object"&&!Array.isArray(entry)).slice(0,30).map(({rebirths: ignored, ...entry}) => entry) : [];
   state.settings = {...state.settings, ...(saved.settings || {})};
   state.settings.farmHistory = Array.isArray(state.settings.farmHistory) ? state.settings.farmHistory.slice(0,10) : [];
   state.settings.farmSession = state.settings.farmSession && typeof state.settings.farmSession === "object" ? state.settings.farmSession : null;
@@ -369,7 +371,8 @@ $("clearSightings").addEventListener("click",()=>{if(!confirmAction("¿Borrar to
 function renderFinder(){
  const box=$("finderFeed"),query=$("finderSearch").value.trim().toLowerCase();
  box.replaceChildren();
- const reports=state.finderReports.filter(r=>[r.egg,r.rarity,r.notes,r.jobId].join(" ").toLowerCase().includes(query));
+ const sort=$("finderSort")?.value||"recent";
+ const reports=state.finderReports.filter(r=>[r.egg,r.rarity,r.zone,r.notes,r.jobId,r.weight].join(" ").toLowerCase().includes(query)).sort((a,b)=>sort==="weight"?(Number(b.weight)||0)-(Number(a.weight)||0):(Number(b.id)||0)-(Number(a.id)||0));
  if(!reports.length){box.innerHTML='<div class="empty-state"><span>📡</span><b>Sin hallazgos coincidentes</b><small>Registra uno o cambia la búsqueda.</small></div>';return;}
  reports.forEach(report=>{
   const card=document.createElement("article");card.className="finder-report";
@@ -378,15 +381,16 @@ function renderFinder(){
   const tag=document.createElement("span");tag.className="tag community";tag.textContent=report.rarity||"Sin confirmar";
   head.append(title,tag);
   const details=document.createElement("small");
-  details.textContent=[report.date,report.jobId?"Job ID: "+report.jobId:"Sin Job ID",report.notes].filter(Boolean).join(" · ");
+  details.textContent=[report.zone||"Zona sin indicar",report.weight?("Peso: "+formatGameNumber(Number(report.weight))+" kg"):"Peso sin indicar",report.date,report.jobId?"Job ID: "+report.jobId:"Sin Job ID",report.notes].filter(Boolean).join(" · ");
   card.append(head,details);
   if(report.jobId){
    const join=document.createElement("button");join.className="secondary-btn";join.type="button";join.textContent="Intentar abrir servidor ↗";
    join.addEventListener("click",()=>{
-    const url="https://www.roblox.com/games/start?placeId="+GAME_ID+"&gameInstanceId="+encodeURIComponent(report.jobId);
-    window.open(url,"_blank","noopener,noreferrer");
+    openRobloxServer(report.jobId);
    });
-   card.append(join);
+   const copy=document.createElement("button");copy.className="secondary-btn";copy.type="button";copy.textContent="Copiar Job ID";
+   copy.addEventListener("click",()=>copyText(report.jobId));
+   card.append(join,copy);
   }
   const del=document.createElement("button");del.className="remove-btn finder-delete";del.type="button";del.textContent="×";del.setAttribute("aria-label","Eliminar hallazgo");
   del.addEventListener("click",()=>{if(!confirmAction("¿Eliminar este hallazgo?"))return;state.finderReports=state.finderReports.filter(x=>x.id!==report.id);save();renderFinder();updateDashboard();});
@@ -395,13 +399,17 @@ function renderFinder(){
 }
 $("finderForm").addEventListener("submit",e=>{
  e.preventDefault();
- const egg=$("finderEgg").value.trim(),jobId=$("finderJobId").value.trim();
+ const egg=$("finderEgg").value.trim(),jobId=$("finderJobId").value.trim(),zone=$("finderZone").value.trim(),weightRaw=$("finderWeight").value.trim();
  if(!egg)return;
- state.finderReports.unshift({id:Date.now(),egg,rarity:$("finderRarity").value,jobId,notes:$("finderNotes").value.trim(),date:new Date().toLocaleString("es-UY")});
+ if(jobId&&!isValidJobId(jobId)){toast("El Job ID no tiene un formato válido.");return;}
+ const weight=weightRaw===""?"":Number(weightRaw);
+ if(weight!==""&&(!Number.isFinite(weight)||weight<0)){toast("El peso debe ser un número igual o mayor que cero.");return;}
+ state.finderReports.unshift({id:Date.now(),egg,rarity:$("finderRarity").value,jobId,zone,weight:weight===""?"":String(weight),notes:$("finderNotes").value.trim(),date:new Date().toLocaleString("es-UY")});
  state.finderReports=state.finderReports.slice(0,100);
  $("finderForm").reset();save();renderFinder();updateDashboard();toast("Hallazgo guardado en este dispositivo.");
 });
 $("finderSearch").addEventListener("input",renderFinder);
+$("finderSort").addEventListener("change",renderFinder);
 $("clearFinderReports").addEventListener("click",()=>{
  if(!confirmAction("¿Borrar todos tus hallazgos del Finder?"))return;
  state.finderReports=[];save();renderFinder();updateDashboard();toast("Tus hallazgos fueron borrados.");
@@ -537,7 +545,7 @@ $("reducedMotion").addEventListener("change",e=>{
 });
 $("confirmDelete").addEventListener("change",e=>{state.settings.confirmDelete=e.target.checked;save();});
 $("exportData").addEventListener("click",()=>{
- const data={format:"diego-hub-backup",version:1,exportedAt:new Date().toISOString(),favorites:[...state.favorites],serverFavorites:[...state.serverFavorites],history:state.history,goals:state.goals,sightings:state.sightings,finderReports:state.finderReports,customEggs:state.customEggs,checks:state.checks,settings:state.settings};
+ const data={format:"diego-hub-backup",version:2,exportedAt:new Date().toISOString(),favorites:[...state.favorites],serverFavorites:[...state.serverFavorites],history:state.history,goals:state.goals,sightings:state.sightings,finderReports:state.finderReports,customEggs:state.customEggs,checks:state.checks,playerProfile:state.playerProfile,playerHistory:state.playerHistory,settings:state.settings};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="diego-hub-backup.json";document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
@@ -559,8 +567,10 @@ $("importFile").addEventListener("change",async event=>{
   state.finderReports=Array.isArray(backup.finderReports)?backup.finderReports:[];
   state.customEggs=Array.isArray(backup.customEggs)?backup.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string"):[];
   state.checks=backup.checks&&typeof backup.checks==="object"?backup.checks:{};
-  state.playerProfile=backup.playerProfile&&typeof backup.playerProfile==="object"&&!Array.isArray(backup.playerProfile)?backup.playerProfile:{};
-  state.playerHistory=Array.isArray(backup.playerHistory)?backup.playerHistory.filter(x=>x&&typeof x==="object").slice(0,30):[];
+  const importedProfile=backup.playerProfile&&typeof backup.playerProfile==="object"&&!Array.isArray(backup.playerProfile)?backup.playerProfile:{};
+  const {rebirths: ignoredImportedRebirths, ...cleanImportedProfile}=importedProfile;
+  state.playerProfile=cleanImportedProfile;
+  state.playerHistory=Array.isArray(backup.playerHistory)?backup.playerHistory.filter(x=>x&&typeof x==="object").slice(0,30).map(({rebirths: ignored, ...entry})=>entry):[];
   const importedSettings=backup.settings&&typeof backup.settings==="object"&&!Array.isArray(backup.settings)?backup.settings:{};
   const candidateSession=importedSettings.farmSession;
   const importedSession=candidateSession&&typeof candidateSession==="object"&&["running","paused","finished"].includes(candidateSession.status)&&Number.isFinite(Number(candidateSession.elapsedMs))&&(candidateSession.status!=="running"||Number.isFinite(Number(candidateSession.startedAt)))?{status:candidateSession.status,elapsedMs:Math.max(0,Number(candidateSession.elapsedMs)||0),startedAt:candidateSession.status==="running"?Number(candidateSession.startedAt):null}:null;
@@ -642,29 +652,35 @@ $("calculateRoutePlan").addEventListener("click",()=>{
 });
 
 function playerFields(){
- const fields=["playerSpeed","playerCash","playerRebirths","playerBase","playerTreadmill","playerTrail"];
+ const fields=["playerSpeed","playerCash","playerIncome","playerBase","playerTreadmill","playerTrail"];
  return Object.fromEntries(fields.map(id=>[id.replace("player","").toLowerCase(),$(id).value.trim()]));
 }
 function renderPlayerProfile(){
  const p=state.playerProfile||{};
- const map={speed:"playerSpeed",cash:"playerCash",rebirths:"playerRebirths",base:"playerBase",treadmill:"playerTreadmill",trail:"playerTrail"};
+ const map={speed:"playerSpeed",cash:"playerCash",income:"playerIncome",base:"playerBase",treadmill:"playerTreadmill",trail:"playerTrail"};
  Object.entries(map).forEach(([key,id])=>{if(document.activeElement!==$(id))$(id).value=p[key]??"";});
  if(document.activeElement!==$("playerNote"))$("playerNote").value=p.note||"";
  const box=$("playerHistory"),rows=state.playerHistory||[];
  if(!rows.length){box.innerHTML='<div class="empty-state"><span>📈</span><b>Aún no hay registros</b><small>Guarda tu perfil y registra tu primer progreso.</small></div>';return;}
  box.innerHTML=rows.map((r,i)=>{
   const prev=rows[i+1],delta=prev&&Number.isFinite(Number(r.speed))&&Number.isFinite(Number(prev.speed))?Number(r.speed)-Number(prev.speed):null;
-  return '<div class="player-history-row"><div><b>'+escapeHTML(r.date||"Registro")+'</b><small>'+escapeHTML(r.note||"Sin nota")+'</small></div><div class="player-history-metrics"><span>Speed <b>'+escapeHTML(formatGameNumber(Number(r.speed)||0))+'</b></span><span>Dinero <b>'+escapeHTML(formatGameNumber(Number(r.cash)||0))+'</b></span><span>Rebirths <b>'+escapeHTML(r.rebirths||"0")+'</b></span>'+(delta===null?'':'<span class="player-delta '+(delta>=0?'positive':'negative')+'">'+(delta>=0?'+':'')+escapeHTML(formatGameNumber(delta))+' Speed</span>')+'</div></div>';
+  return '<div class="player-history-row"><div><b>'+escapeHTML(r.date||"Registro")+'</b><small>'+escapeHTML(r.note||"Sin nota")+'</small></div><div class="player-history-metrics"><span>Speed <b>'+escapeHTML(formatGameNumber(Number(r.speed)||0))+'</b></span><span>Dinero <b>'+escapeHTML(formatGameNumber(Number(r.cash)||0))+'</b></span><span>Ingreso <b>$'+escapeHTML(formatGameNumber(Number(r.income)||0))+'/s</b></span>'+(delta===null?'':'<span class="player-delta '+(delta>=0?'positive':'negative')+'">'+(delta>=0?'+':'')+escapeHTML(formatGameNumber(delta))+' Speed</span>')+'</div></div>';
  }).join("");
 }
 function savePlayerProfile(snapshot=false){
  const profile=playerFields();
- const labels={speed:"Speed",cash:"Dinero",rebirths:"Rebirths",base:"Base",treadmill:"Cinta",trail:"Trail"};
- for(const [key,label] of Object.entries(labels)){if(profile[key]!==""&&(!Number.isFinite(Number(profile[key]))||Number(profile[key])<0)){toast(label+" debe ser un número igual o mayor que cero.");return;}}
+ const labels={speed:"Speed",cash:"Dinero",income:"Ingreso de mascotas",base:"Base",treadmill:"Cinta",trail:"Trail"};
+ for(const [key,label] of Object.entries(labels)){
+  if(profile[key]!==""&&(!Number.isFinite(Number(profile[key]))||Number(profile[key])<0)){
+   toast(label+" debe ser un número igual o mayor que cero.");return;
+  }
+ }
  profile.note=$("playerNote").value.trim().slice(0,240);
+ if(snapshot&&!Object.entries(profile).some(([key,value])=>key!=="note"&&value!=="")){
+  toast("Completa al menos una estadística antes de registrar.");return;
+ }
  state.playerProfile=profile;
  if(snapshot){
-  if(!Object.values(profile).some(v=>v!==""&&v!==profile.note)){toast("Completa al menos una estadística antes de registrar.");return;}
   state.playerHistory.unshift({...profile,date:new Date().toLocaleString("es-UY")});
   state.playerHistory=state.playerHistory.slice(0,30);
  }
@@ -678,6 +694,7 @@ $("clearPlayerHistory").addEventListener("click",()=>{
  if(!confirmAction("¿Borrar todos los registros de progreso del jugador?"))return;
  state.playerHistory=[];persist();renderPlayerProfile();toast("Historial de jugador borrado.");
 });
+
 document.querySelectorAll("[data-event-check]").forEach(input=>{
  const key=input.dataset.eventCheck;
  input.checked=!!state.checks["event:"+key];

@@ -23,13 +23,15 @@ Los recorridos de interfaz publicados por terceros muestran más detalle: pesta�
 | Server / Auto Hop | Buscar servidores y cambiar de instancia | Buscador de servidores públicos y unión manual por Job ID; sin salto automático masivo |
 | Mobile / PC | Interfaz adaptable | Diseño responsive y controles táctiles; la compatibilidad real se valida en dispositivos, no se presume |
 
-## Cambios añadidos en v3.4
+## Cambios añadidos en v3.4 y v3.5
 
-- Perfil de jugador: Speed, dinero, rebirths, nivel de base, cinta y trail.
-- Historial local de snapshots con diferencia de Speed respecto al registro anterior.
-- Checklist personal de Halloween y The Hollow.
-- Los nuevos datos se guardan en este dispositivo y forman parte de las copias de seguridad JSON.
-- El panel deja claro que los datos se introducen manualmente y que no lee ni modifica la cuenta de Roblox.
+- v3.4 añadió perfil manual, historial de progreso y checklist personal de Halloween / The Hollow.
+- v3.5 corrige un campo que no corresponde al juego: no se registra ningún rebirth.
+- El perfil registra Speed, dinero, ingreso de mascotas por segundo, base, cinta y trail.
+- El historial muestra el ingreso estimado y la diferencia de Speed entre registros.
+- Las copias JSON incluyen ahora el perfil y el historial del jugador; la importación elimina el campo antiguo `rebirths` si aparece en una copia anterior.
+- El Finder local permite registrar zona/evento y peso del huevo, ordenar por mayor peso y validar el Job ID antes de ofrecer la unión manual.
+- Los hallazgos siguen siendo privados del dispositivo: esto no crea un feed compartido ni un radar global.
 
 ## Límites y seguridad
 
