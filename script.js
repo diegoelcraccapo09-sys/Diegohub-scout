@@ -168,9 +168,9 @@ function updateDashboard(){
 function renderHomeActivity(){
  const box=$("homeActivity");if(!box)return;box.replaceChildren();
  const items=[
-  ...state.sightings.map(x=>({kind:"Hallazgo",name:x.egg,detail:x.zone||x.notes||"Registro personal",date:x.date||""})),
-  ...state.finderReports.map(x=>({kind:"Finder",name:x.egg,detail:x.rarity||"Sin confirmar",date:x.date||""}))
- ].slice(0,5);
+  ...state.sightings.map(x=>({id:x.id||0,kind:"Hallazgo",name:x.egg,detail:x.zone||x.notes||"Registro personal",date:x.date||""})),
+  ...state.finderReports.map(x=>({id:x.id||0,kind:"Finder",name:x.egg,detail:x.rarity||"Sin confirmar",date:x.date||""}))
+ ].sort((a,b)=>b.id-a.id).slice(0,5);
  if(!items.length){box.innerHTML='<div class="empty-state"><small>Tus hallazgos recientes aparecerán aquí cuando los registres.</small></div>';return;}
  items.forEach(item=>{
   const row=document.createElement("div");row.className="home-activity-item";
@@ -312,8 +312,8 @@ function renderSightings(){
   row.append(info,del);box.append(row);
  });
 }
-$("sightingForm").addEventListener("submit",e=>{e.preventDefault();state.sightings.unshift({id:Date.now(),egg:$("sightingEgg").value.trim(),zone:$("sightingZone").value.trim(),notes:$("sightingNotes").value.trim(),date:new Date().toLocaleString("es-UY")});$("sightingForm").reset();save();renderSightings();toast("Hallazgo guardado.");});
-$("clearSightings").addEventListener("click",()=>{if(!confirmAction("¿Borrar todos los hallazgos de la bitácora?"))return;state.sightings=[];save();renderSightings();});
+$("sightingForm").addEventListener("submit",e=>{e.preventDefault();state.sightings.unshift({id:Date.now(),egg:$("sightingEgg").value.trim(),zone:$("sightingZone").value.trim(),notes:$("sightingNotes").value.trim(),date:new Date().toLocaleString("es-UY")});$("sightingForm").reset();save();renderSightings();updateDashboard();toast("Hallazgo guardado.");});
+$("clearSightings").addEventListener("click",()=>{if(!confirmAction("¿Borrar todos los hallazgos de la bitácora?"))return;state.sightings=[];save();renderSightings();updateDashboard();});
 
 function renderFinder(){
  const box=$("finderFeed"),query=$("finderSearch").value.trim().toLowerCase();
@@ -338,7 +338,7 @@ function renderFinder(){
    card.append(join);
   }
   const del=document.createElement("button");del.className="remove-btn finder-delete";del.type="button";del.textContent="×";del.setAttribute("aria-label","Eliminar hallazgo");
-  del.addEventListener("click",()=>{if(!confirmAction("¿Eliminar este hallazgo?"))return;state.finderReports=state.finderReports.filter(x=>x.id!==report.id);save();renderFinder();});
+  del.addEventListener("click",()=>{if(!confirmAction("¿Eliminar este hallazgo?"))return;state.finderReports=state.finderReports.filter(x=>x.id!==report.id);save();renderFinder();updateDashboard();});
   card.append(del);box.append(card);
  });
 }
@@ -348,12 +348,12 @@ $("finderForm").addEventListener("submit",e=>{
  if(!egg)return;
  state.finderReports.unshift({id:Date.now(),egg,rarity:$("finderRarity").value,jobId,notes:$("finderNotes").value.trim(),date:new Date().toLocaleString("es-UY")});
  state.finderReports=state.finderReports.slice(0,100);
- $("finderForm").reset();save();renderFinder();toast("Hallazgo guardado en este dispositivo.");
+ $("finderForm").reset();save();renderFinder();updateDashboard();toast("Hallazgo guardado en este dispositivo.");
 });
 $("finderSearch").addEventListener("input",renderFinder);
 $("clearFinderReports").addEventListener("click",()=>{
  if(!confirmAction("¿Borrar todos tus hallazgos del Finder?"))return;
- state.finderReports=[];save();renderFinder();toast("Tus hallazgos fueron borrados.");
+ state.finderReports=[];save();renderFinder();updateDashboard();toast("Tus hallazgos fueron borrados.");
 });
 $("finderGoServers").addEventListener("click",()=>go("servidores"));
 
