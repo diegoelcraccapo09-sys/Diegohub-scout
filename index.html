@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090711">
+  <meta name="description" content="Diego Hub: panel de ayuda y seguimiento para Steal An Egg.">
+  <title>Diego Hub — Steal An Egg</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">👑</div>
+        <div class="brand-copy"><strong>DIEGO HUB</strong><small>STEAL AN EGG · v2.0</small></div>
+        <button class="icon-btn close-sidebar" id="closeSidebar" aria-label="Cerrar menú">✕</button>
+      </div>
+      <div class="profile-mini">
+        <div class="avatar">D</div>
+        <div><strong>Panel del jugador</strong><small>Listo para explorar</small></div>
+        <span class="online-dot"></span>
+      </div>
+      <nav class="side-nav" aria-label="Navegación principal">
+        <span class="nav-label">MENÚ PRINCIPAL</span>
+        <button class="nav-btn active" data-tab="inicio"><span>⌂</span> Inicio</button>
+        <button class="nav-btn" data-tab="servidores"><span>🌐</span> Servidores</button>
+        <button class="nav-btn" data-tab="finder"><span>📡</span> Finder <em class="nav-new">BETA</em></button>
+        <button class="nav-btn" data-tab="huevos"><span>🥚</span> Buscador de huevos</button>
+        <button class="nav-btn" data-tab="rastreador"><span>🎯</span> Rastreador</button>
+        <button class="nav-btn" data-tab="ruta"><span>⚡</span> Plan de progreso</button>
+        <button class="nav-btn" data-tab="recompensas"><span>🎁</span> Eventos y recompensas</button>
+        <span class="nav-label nav-label-bottom">PREFERENCIAS</span>
+        <button class="nav-btn" data-tab="ajustes"><span>⚙</span> Configuración</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note"><span>💜</span><p>Hecho con la ayuda de ChatGPT</p></div>
+        <small>Gracias por confiar, capitán.</small>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="openSidebar" aria-label="Abrir menú">☰</button>
+        <div class="breadcrumb"><span>Diego Hub</span><b>/</b><strong id="pageTitle">Inicio</strong></div>
+        <div class="top-actions">
+          <span class="version-pill"><i></i> v2.0</span>
+          <button class="icon-btn" id="minimizeHub" title="Minimizar panel" aria-label="Minimizar panel">－</button>
+        </div>
+      </header>
+
+      <div class="content" id="hubContent">
+        <section class="panel active" id="inicio">
+          <div class="hero">
+            <div class="hero-copy">
+              <span class="eyebrow">CENTRO DE CONTROL</span>
+              <h1>Bienvenido a <span>Diego Hub</span></h1>
+              <p>Tu centro de herramientas para explorar, comparar y organizar tu progreso en Steal An Egg.</p>
+              <div class="hero-actions">
+                <button class="primary-btn" data-go="huevos">🥚 Explorar huevos</button>
+                <button class="secondary-btn" data-go="servidores">🌐 Buscar servidores</button>
+              </div>
+            </div>
+            <div class="hero-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="egg-art">🥚</div><span class="spark spark-a">✦</span><span class="spark spark-b">✧</span></div>
+          </div>
+          <div class="section-heading"><div><span class="eyebrow">RESUMEN</span><h2>Tu panel rápido</h2></div><span class="live-label"><i></i> PANEL LOCAL</span></div>
+          <div class="stat-grid">
+            <article class="stat-card"><span class="stat-icon purple">🥚</span><div><small>Huevos en catálogo</small><strong id="statEggs">18</strong></div></article>
+            <article class="stat-card"><span class="stat-icon blue">🌐</span><div><small>Servidores vistos</small><strong id="statServers">0</strong></div></article>
+            <article class="stat-card"><span class="stat-icon gold">⭐</span><div><small>Huevos guardados</small><strong id="statSaved">0</strong></div></article>
+            <article class="stat-card"><span class="stat-icon green">✓</span><div><small>Objetivos marcados</small><strong id="statGoals">0</strong></div></article>
+          </div>
+          <div class="two-col">
+            <article class="surface">
+              <div class="card-heading"><div><span class="eyebrow">ACCESO RÁPIDO</span><h3>Herramientas</h3></div><span class="heading-icon">✦</span></div>
+              <div class="quick-list">
+                <button class="quick-item" data-go="servidores"><span class="quick-icon">🌐</span><span><b>Buscador de servidores</b><small>Revisa jugadores y espacios disponibles</small></span><em>→</em></button>
+                <button class="quick-item" data-go="huevos"><span class="quick-icon">🥚</span><span><b>Catálogo de huevos</b><small>Busca, filtra y compara información</small></span><em>→</em></button>
+                <button class="quick-item" data-go="rastreador"><span class="quick-icon">🎯</span><span><b>Rastreador manual</b><small>Guarda objetivos y hallazgos</small></span><em>→</em></button>
+              </div>
+            </article>
+            <article class="surface status-surface">
+              <div class="card-heading"><div><span class="eyebrow">INFORMACIÓN</span><h3>Estado del proyecto</h3></div><span class="heading-icon">◈</span></div>
+              <div class="status-line"><span class="status-bullet green-bullet"></span><div><b>Panel funcionando localmente</b><small>Los datos guardados quedan en este navegador.</small></div></div>
+              <div class="status-line"><span class="status-bullet purple-bullet"></span><div><b>Datos del juego</b><small>Los valores comunitarios se identifican como tales.</small></div></div>
+              <div class="notice compact-notice">⚠️ Diego Hub no modifica Roblox ni ejecuta automatizaciones dentro del juego.</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel" id="servidores">
+          <div class="page-intro"><span class="eyebrow">MULTIJUGADOR</span><h1>Buscador de <span>servidores</span></h1><p>Consulta servidores públicos y ordénalos por espacios libres o ping informado.</p></div>
+          <article class="surface">
+            <div class="toolbar-wrap">
+              <div class="field grow"><label for="serverSort">ORDENAR RESULTADOS</label><select id="serverSort"><option value="free">Más espacios libres</option><option value="ping">Menor ping informado</option><option value="players">Menos jugadores</option></select></div>
+              <div class="field"><label for="serverFilter">FILTRO</label><select id="serverFilter"><option value="all">Todos</option><option value="free">Con espacios</option><option value="notfull">No llenos</option></select></div>
+            </div>
+            <div class="button-row"><button class="primary-btn" id="searchServers">🔎 Buscar servidores</button><button class="secondary-btn" id="nextServers" disabled>Siguiente tanda →</button></div>
+            <p class="status-text" id="serverStatus" role="status">Preparado. Pulsa buscar para consultar Roblox.</p>
+            <div class="stat-grid mini-stats" id="serverStats"></div>
+            <div class="server-list" id="serverList"><div class="empty-state"><span>🌐</span><b>Todavía no hay resultados</b><small>Los servidores aparecerán aquí después de una búsqueda.</small></div></div>
+          </article>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">REGISTRO LOCAL</span><h3>Últimas búsquedas</h3></div><button class="text-btn" id="clearHistory">Borrar historial</button></div><div id="serverHistory" class="history-list"></div></article>
+        </section>
+
+        <section class="panel" id="finder">
+          <div class="page-intro"><span class="eyebrow">RADAR EXPERIMENTAL</span><h1>Diego <span>Finder</span></h1><p>Organiza hallazgos y localiza servidores públicos. El feed automático entre todos los servidores todavía necesita una fuente de datos y un backend.</p></div>
+          <article class="surface finder-hero">
+            <div class="finder-status"><span class="finder-pulse"></span><div><b>Finder comunitario · modo local</b><small>No hay conexión a un feed global en vivo.</small></div><span class="finder-beta">BETA</span></div>
+            <h2>Encontrar un huevo es solo el comienzo.</h2>
+            <p class="muted">Chilli Finder anuncia un feed en vivo que recopila hallazgos de distintos servidores y permite unirse con un toque. Diego Hub todavía no recibe esos datos: no vamos a mostrar huevos inventados ni fingir que el radar está conectado.</p>
+            <div class="button-row"><button class="primary-btn" id="finderGoServers">🌐 Explorar servidores públicos</button><a class="secondary-btn link-button" href="https://chillihub.pro/" target="_blank" rel="noopener noreferrer">Ver referencia Chilli Hub ↗</a></div>
+          </article>
+          <div class="two-col">
+            <article class="surface">
+              <div class="card-heading"><div><span class="eyebrow">APORTACIÓN MANUAL</span><h3>Registrar un hallazgo</h3></div><span class="heading-icon">🥚</span></div>
+              <form id="finderForm">
+                <div class="field"><label for="finderEgg">HUEVO / PET</label><input id="finderEgg" required maxlength="60" placeholder="Ej.: Royal Skywhale"></div>
+                <div class="field"><label for="finderRarity">RAREZA / TIPO</label><select id="finderRarity"><option>Sin confirmar</option><option>Raro</option><option>Épico</option><option>Legendario</option><option>Ultra raro</option><option>Secreto</option></select></div>
+                <div class="field"><label for="finderJobId">JOB ID DEL SERVIDOR (OPCIONAL)</label><input id="finderJobId" maxlength="80" placeholder="GUID del servidor"></div>
+                <div class="field"><label for="finderNotes">NOTAS</label><textarea id="finderNotes" rows="2" maxlength="180" placeholder="Valor, zona o detalle que viste..."></textarea></div>
+                <button class="primary-btn full-btn" type="submit">＋ Guardar hallazgo en este dispositivo</button>
+              </form>
+              <p class="muted finder-disclaimer">Estos registros son privados de este navegador/dispositivo. Todavía no se comparten con otros jugadores.</p>
+            </article>
+            <article class="surface">
+              <div class="card-heading"><div><span class="eyebrow">TU RADAR</span><h3>Hallazgos guardados</h3></div><span class="heading-icon">📡</span></div>
+              <div class="field"><label for="finderSearch">FILTRAR HALLAZGOS</label><input id="finderSearch" type="search" placeholder="Buscar huevo, rareza o nota..."></div>
+              <div id="finderFeed" class="finder-feed"><div class="empty-state"><span>📡</span><b>Radar vacío</b><small>Cuando registres un hallazgo, aparecerá aquí.</small></div></div>
+              <button class="text-btn" id="clearFinderReports" type="button">Borrar mis hallazgos</button>
+            </article>
+          </div>
+          <article class="surface finder-roadmap"><div class="card-heading"><div><span class="eyebrow">CÓMO LLEGAR AL FINDER EN VIVO</span><h3>Lo que falta construir</h3></div></div>
+            <div class="finder-steps"><div><b>01 · Fuente dentro del juego</b><small>Un sistema autorizado tendría que detectar y reportar el huevo y el Job ID. La API pública de Roblox solo lista servidores y jugadores; no revela qué huevos hay dentro.</small></div><div><b>02 · Backend seguro</b><small>Recibir reportes, validarlos, eliminar datos viejos y distribuirlos a los usuarios. Nunca guardar contraseñas, cookies .ROBLOSECURITY ni tokens de Roblox.</small></div><div><b>03 · Feed en tiempo real</b><small>Diego Hub consultaría el backend, aplicaría filtros y ofrecería abrir el servidor reportado. Harían falta pruebas, límites de consultas y moderación contra reportes falsos.</small></div></div>
+          </article>
+        </section>
+
+        <section class="panel" id="huevos">
+          <div class="page-intro"><span class="eyebrow">BASE DE DATOS</span><h1>Buscador de <span>huevos</span></h1><p>Encuentra huevos por nombre, zona o guardián. Guarda favoritos y compara dos entradas.</p></div>
+          <article class="surface">
+            <div class="field"><label for="eggSearch">BUSCAR EN EL CATÁLOGO</label><input id="eggSearch" type="search" placeholder="Ej.: Dragon, Snow, Phoenix..."></div>
+            <div class="toolbar-wrap filters">
+              <div class="field grow"><label for="zoneFilter">ZONA</label><select id="zoneFilter"><option value="all">Todas las zonas</option></select></div>
+              <div class="field grow"><label for="typeFilter">TIPO</label><select id="typeFilter"><option value="all">Todos los tipos</option><option>Básico</option><option>Evento</option><option>Especial</option><option>Desconocido</option></select></div>
+              <div class="field grow"><label for="confidenceFilter">ESTADO</label><select id="confidenceFilter"><option value="all">Todos</option><option>Confirmado</option><option>Comunitario</option><option>Por verificar</option></select></div>
+            </div>
+            <div class="catalog-summary"><span id="eggCount">18 resultados</span><span>♡ Pulsa guardar para favoritos</span></div>
+            <div class="egg-grid" id="eggGrid"></div>
+          </article>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">COMPARACIÓN</span><h3>Comparador de huevos</h3></div><span class="heading-icon">⇄</span></div>
+            <div class="compare-grid">
+              <div class="field"><label for="compareA">HUEVO A</label><select id="compareA"></select></div>
+              <div class="field"><label for="compareB">HUEVO B</label><select id="compareB"></select></div>
+            </div>
+            <button class="primary-btn" id="compareEggs">⚖ Comparar huevos</button>
+            <div id="compareResult" class="compare-result empty-state">Selecciona dos huevos para ver sus diferencias.</div>
+          </article>
+        </section>
+
+        <section class="panel" id="rastreador">
+          <div class="page-intro"><span class="eyebrow">SEGUIMIENTO PERSONAL</span><h1>Rastreador <span>manual</span></h1><p>Registra huevos que viste, zonas que visitaste y objetivos que quieres completar.</p></div>
+          <div class="two-col">
+            <article class="surface">
+              <div class="card-heading"><div><span class="eyebrow">NUEVO REGISTRO</span><h3>Añadir hallazgo</h3></div><span class="heading-icon">＋</span></div>
+              <form id="sightingForm">
+                <div class="field"><label for="sightingEgg">HUEVO / OBJETIVO</label><input id="sightingEgg" required maxlength="60" placeholder="Nombre del huevo o pet"></div>
+                <div class="field"><label for="sightingZone">ZONA / UBICACIÓN</label><input id="sightingZone" maxlength="60" placeholder="Ej.: Forest"></div>
+                <div class="field"><label for="sightingNotes">NOTAS</label><textarea id="sightingNotes" rows="3" maxlength="240" placeholder="Servidor, aspecto, hora, etc."></textarea></div>
+                <button class="primary-btn full-btn" type="submit">＋ Guardar hallazgo</button>
+              </form>
+            </article>
+            <article class="surface">
+              <div class="card-heading"><div><span class="eyebrow">OBJETIVOS</span><h3>Mi lista</h3></div><span class="heading-icon">✓</span></div>
+              <form id="goalForm" class="inline-form"><input id="goalInput" required maxlength="70" placeholder="Ej.: Conseguir un huevo raro"><button class="primary-btn" type="submit">Añadir</button></form>
+              <div id="goalList" class="goal-list"></div>
+            </article>
+          </div>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">BITÁCORA</span><h3>Hallazgos guardados</h3></div><button class="text-btn" id="clearSightings">Borrar registros</button></div><div id="sightingList" class="history-list"></div></article>
+        </section>
+
+        <section class="panel" id="ruta">
+          <div class="page-intro"><span class="eyebrow">PROGRESO</span><h1>Plan de <span>progreso</span></h1><p>Organiza tu sesión y lleva el control de tus objetivos sin automatizar el juego.</p></div>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">PLAN DE SESIÓN</span><h3>Checklist de progreso</h3></div><span class="heading-icon">⚡</span></div>
+            <p class="muted">Marca cada paso a medida que lo completes dentro de Roblox.</p>
+            <div id="progressChecklist" class="checklist">
+              <label class="check-row"><input type="checkbox" data-check="speed"><span><b>Revisar mi Speed</b><small>Comprueba qué zonas puedes alcanzar.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-check="route"><span><b>Elegir una ruta segura</b><small>Observa el camino de ida y vuelta.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-check="egg"><span><b>Buscar un huevo objetivo</b><small>Registra su nombre y ubicación.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-check="return"><span><b>Volver a la base</b><small>Prioriza completar el recorrido.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-check="hatch"><span><b>Registrar el resultado</b><small>Anota qué pet obtuviste.</small></span></label>
+            </div>
+            <div class="progress-track"><span id="progressBar"></span></div><p class="progress-caption" id="progressCaption">0 de 5 pasos completados</p>
+            <button class="secondary-btn" id="resetChecklist">Reiniciar checklist</button>
+          </article>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">HERRAMIENTAS</span><h3>Calculadora de objetivo</h3></div><span class="heading-icon">⌁</span></div><div class="toolbar-wrap"><div class="field grow"><label for="currentSpeed">SPEED ACTUAL</label><input id="currentSpeed" type="number" min="0" placeholder="Ej.: 10000"></div><div class="field grow"><label for="targetSpeed">SPEED OBJETIVO</label><input id="targetSpeed" type="number" min="0" placeholder="Ej.: 40000"></div></div><button class="primary-btn" id="calculateSpeed">Calcular diferencia</button><p id="speedResult" class="status-text">Introduce tu Speed actual y objetivo.</p></article>
+        </section>
+
+        <section class="panel" id="recompensas">
+          <div class="page-intro"><span class="eyebrow">NOVEDADES</span><h1>Eventos y <span>recompensas</span></h1><p>Un espacio para seguir eventos y recompensas sin publicar códigos inventados.</p></div>
+          <article class="surface event-feature"><span class="event-tag">REVISAR EN EL JUEGO</span><h2>Halloween · eventos de temporada</h2><p>Los eventos, objetivos y recompensas pueden cambiar. Comprueba el panel dentro de Roblox antes de invertir tiempo o recursos.</p><a class="primary-btn link-button" href="https://www.roblox.com/games/107778070777162" target="_blank" rel="noopener noreferrer">Abrir Steal An Egg ↗</a></article>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">TRANSPARENCIA</span><h3>Estado de la información</h3></div></div><div class="legend-list"><p><span class="tag confirmed">Confirmado</span> Dato respaldado por una fuente clara o comprobación directa.</p><p><span class="tag community">Comunitario</span> Información compartida por jugadores; puede cambiar o contener errores.</p><p><span class="tag pending">Por verificar</span> No hay suficiente evidencia para afirmarlo.</p></div></article>
+        </section>
+
+        <section class="panel" id="ajustes">
+          <div class="page-intro"><span class="eyebrow">PERSONALIZACIÓN</span><h1>Configuración</h1><p>Ajusta el panel y administra los datos guardados en este dispositivo.</p></div>
+          <article class="surface">
+            <div class="setting-row"><div><b>Reducir animaciones</b><small>Menos movimiento en las transiciones.</small></div><label class="switch"><input type="checkbox" id="reducedMotion"><span></span></label></div>
+            <div class="setting-row"><div><b>Confirmar antes de borrar</b><small>Evita eliminar registros por accidente.</small></div><label class="switch"><input type="checkbox" id="confirmDelete" checked><span></span></label></div>
+            <div class="setting-row"><div><b>Exportar mis datos</b><small>Descarga favoritos, objetivos y registros locales.</small></div><button class="secondary-btn" id="exportData">Exportar JSON</button></div>
+            <div class="setting-row"><div><b>Restablecer datos locales</b><small>Borra favoritos, historial y seguimiento guardado.</small></div><button class="danger-btn" id="resetData">Restablecer</button></div>
+          </article>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 2.0</h3></div><span class="version-pill">v2.0</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
+        </section>
+      </div>
+      <footer class="footer"><span>👑 DIEGO HUB</span><span>Hecho con la ayuda de ChatGPT 💜</span></footer>
+    </main>
+  </div>
+
+  <div class="minimized-launcher hidden" id="restoreHub"><button class="primary-btn">👑 Abrir Diego Hub</button></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
