@@ -29,6 +29,7 @@
         <button class="nav-btn" data-tab="finder"><span>📡</span> Egg Finder <em class="nav-new">BETA</em></button>
         <button class="nav-btn" data-tab="huevos"><span>🥚</span> Catálogo</button>
         <button class="nav-btn" data-tab="mascotas"><span>🐾</span> Mascotas</button>
+        <button class="nav-btn" data-tab="proteccion"><span>🔒</span> Protección</button>
         <button class="nav-btn" data-tab="laboratorio"><span>🧪</span> Laboratorio <em class="nav-new">NUEVO</em></button>
         <span class="nav-label nav-group-label">PROGRESO Y REGISTROS</span>
         <button class="nav-btn" data-tab="rastreador"><span>🎯</span> Bitácora</button>
@@ -80,6 +81,7 @@
               <div class="dashboard-actions">
                 <button class="dashboard-action" data-go="finder"><span class="dash-icon">📡</span><span><b>Egg Finder</b><small>Consulta hallazgos guardados por la comunidad local</small></span><em>→</em></button>
                 <button class="dashboard-action" data-go="huevos"><span class="dash-icon">🥚</span><span><b>Catálogo</b><small>Busca, filtra, compara y guarda huevos</small></span><em>→</em></button>
+                <button class="dashboard-action" data-go="proteccion"><span class="dash-icon">🔒</span><span><b>Proteger mis huevos</b><small>Activa tu checklist de protección</small></span><em>→</em></button>
                 <button class="dashboard-action" data-go="servidores"><span class="dash-icon">🌐</span><span><b>Servidores</b><small>Busca servidores públicos y guarda favoritos</small></span><em>→</em></button>
                 <button class="dashboard-action" data-go="ruta"><span class="dash-icon">⚡</span><span><b>Farm & progreso</b><small>Prepara una sesión y sigue tus objetivos</small></span><em>→</em></button>
                 <button class="dashboard-action" data-go="rastreador"><span class="dash-icon">📒</span><span><b>Bitácora</b><small>Revisa tus registros y hallazgos personales</small></span><em>→</em></button>
@@ -323,6 +325,29 @@
             <p id="trainingResult" class="status-text" role="status">Con estos valores, verás una estimación del Speed ganado.</p>
             <small class="muted">Referencia comunitaria, no dato oficial garantizado. La fórmula supone que el multiplicador del trail se aplica al Speed ganado en la cinta; comprueba el resultado en el juego antes de planificar compras.</small>
           </article>
+        </section>
+
+        <section class="panel" id="proteccion">
+          <div class="page-intro"><span class="eyebrow">DEFENSA DE TU BASE</span><h1>Protección de <span>huevos</span></h1><p>Activa tu modo de protección y sigue una rutina rápida para reducir el riesgo de perder huevos.</p></div>
+          <article class="surface protection-feature">
+            <div class="protection-head"><div><span class="eyebrow">MODO DE APOYO LOCAL</span><h2>🔒 PROTEGER MIS HUEVOS</h2><p class="muted">Este botón activa una lista de comprobación dentro de Diego Hub. No bloquea interacciones de Roblox ni impide que otros jugadores recojan huevos.</p></div><span class="protection-indicator" id="protectionIndicator">INACTIVO</span></div>
+            <button class="primary-btn protection-toggle" id="toggleProtection" type="button" aria-pressed="false">🔒 ACTIVAR PROTECCIÓN</button>
+            <p class="status-text" id="protectionStatus" role="status">Modo desactivado. Actívalo antes de empezar tu sesión.</p>
+          </article>
+          <article class="surface">
+            <div class="card-heading"><div><span class="eyebrow">RUTINA DE SEGURIDAD</span><h3>Antes de alejarte de tu base</h3></div><span class="heading-icon">✓</span></div>
+            <div class="protection-checklist">
+              <label class="check-row"><input type="checkbox" data-protect-check="valuable"><span><b>Revisar mis huevos más valiosos</b><small>Comprueba qué está incubándose y cuánto te arriesgas a perder.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-protect-check="players"><span><b>Mirar quién está cerca</b><small>Observa a los jugadores próximos antes de abrir menús o alejarte.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-protect-check="route"><span><b>Preparar el regreso</b><small>Ten clara la ruta de vuelta y evita recorridos largos si tu base queda expuesta.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-protect-check="hatch"><span><b>Completar la incubación cuando puedas</b><small>Verifica en el juego cuándo un huevo deja de estar expuesto.</small></span></label>
+              <label class="check-row"><input type="checkbox" data-protect-check="server"><span><b>Valorar un servidor menos concurrido</b><small>Si hay demasiada actividad, considera cambiar a otro servidor público.</small></span></label>
+            </div>
+            <div class="progress-track"><span id="protectionProgressBar"></span></div>
+            <p class="progress-caption" id="protectionProgressCaption">0 de 5 pasos completados</p>
+            <button class="secondary-btn" id="resetProtectionChecklist" type="button">Reiniciar checklist</button>
+          </article>
+          <article class="surface"><p class="notice">Importante: la protección real depende de las mecánicas que el juego muestre en tu servidor. Diego Hub no ejecuta acciones dentro de Roblox, no modifica el servidor y no garantiza que un huevo no pueda ser robado.</p></article>
         </section>
 
         <section class="panel" id="recompensas">
