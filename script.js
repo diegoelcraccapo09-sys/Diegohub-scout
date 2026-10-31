@@ -10,7 +10,7 @@ const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) 
 const state = {
   tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
   servers: [], seen: new Set(), favorites: new Set(), serverFavorites: new Set(), history: [],
-  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true, protectionMode:false, protectionChecks:{} }
+  goals: [], sightings: [], finderReports: [], customEggs: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true, protectionMode:false, protectionChecks:{}, farmSession:null, farmHistory:[], farmIncomeRate:"", farmTargetMinutes:"" }
 };
 function load() {
   const saved = safeParse(localStorage.getItem(STORAGE), {});
@@ -23,6 +23,8 @@ function load() {
   state.customEggs = Array.isArray(saved.customEggs) ? saved.customEggs.filter(e=>e&&typeof e.name==="string"&&typeof e.zone==="string") : [];
   state.checks = saved.checks || {};
   state.settings = {...state.settings, ...(saved.settings || {})};
+  state.settings.farmHistory = Array.isArray(state.settings.farmHistory) ? state.settings.farmHistory.slice(0,10) : [];
+  state.settings.farmSession = state.settings.farmSession && typeof state.settings.farmSession === "object" ? state.settings.farmSession : null;
 }
 function persist() {
   try {
@@ -389,6 +391,77 @@ $("clearFinderReports").addEventListener("click",()=>{
 });
 $("finderGoServers").addEventListener("click",()=>go("servidores"));
 
+function farmElapsed(session){
+ if(!session)return 0;
+ const running=session.status==="running"&&session.startedAt?Math.max(0,Date.now()-session.startedAt):0;
+ return Math.max(0,Number(session.elapsedMs)||0)+running;
+}
+function formatFarmTime(ms){
+ const total=Math.floor(ms/1000),h=Math.floor(total/3600),m=Math.floor(total%3600/60),s=total%60;
+ return [h,m,s].map(v=>String(v).padStart(2,"0")).join(":");
+}
+function renderFarmSession(){
+ const session=state.settings.farmSession,elapsed=farmElapsed(session);
+ const rate=Math.max(0,Number(state.settings.farmIncomeRate)||0);
+ const target=Math.max(0,Number(state.settings.farmTargetMinutes)||0);
+ $("farmTimer").textContent=formatFarmTime(elapsed);
+ $("farmEarnings").textContent="$"+formatGameNumber(rate*elapsed/1000);
+ $("farmTargetStatus").textContent=target?Math.min(100,elapsed/(target*60000)*100).toFixed(0)+"%":"Sin objetivo";
+ $("farmIncomeRate").value=state.settings.farmIncomeRate??"";
+ $("farmTargetMinutes").value=state.settings.farmTargetMinutes??"";
+ const running=session?.status==="running",paused=session?.status==="paused";
+ $("farmStart").disabled=running;
+ $("farmPause").disabled=!session||(!running&&!paused);
+ $("farmPause").textContent=running?"⏸ Pausar":"▶ Reanudar";
+ $("farmFinish").disabled=!session;
+ $("farmSessionStatus").textContent=running?"Sesión en curso. El contador sigue aunque cambies de pestaña o recargues el panel.":paused?"Sesión pausada. Puedes reanudarla o finalizarla.":session?.status==="finished"?"Última sesión guardada. Puedes iniciar otra cuando quieras.":"Listo. Configura tus datos y comienza a jugar.";
+ const box=$("farmHistory");box.replaceChildren();
+ const history=state.settings.farmHistory||[];
+ if(!history.length){box.innerHTML='<div class="empty-state"><small>Tus sesiones completadas aparecerán aquí.</small></div>';return;}
+ history.slice(0,5).forEach(item=>{
+  const row=document.createElement("div");row.className="history-item";
+  const info=document.createElement("div"),title=document.createElement("b"),detail=document.createElement("small");
+  title.textContent=formatFarmTime(item.elapsedMs)+" · $"+formatGameNumber(item.earnings||0);
+  detail.textContent=(item.date||"Fecha desconocida")+" · "+(item.rate>0?"$"+formatGameNumber(item.rate)+"/s":"Ingreso no configurado");
+  info.append(title,detail);row.append(info);box.append(row);
+ });
+}
+$("farmIncomeRate").addEventListener("input",e=>{state.settings.farmIncomeRate=e.target.value;persist();renderFarmSession();});
+$("farmTargetMinutes").addEventListener("input",e=>{state.settings.farmTargetMinutes=e.target.value;persist();renderFarmSession();});
+$("farmStart").addEventListener("click",()=>{
+ const rate=Number($("farmIncomeRate").value),target=Number($("farmTargetMinutes").value);
+ if($("farmIncomeRate").value.trim()!==""&&(!Number.isFinite(rate)||rate<0)){toast("El ingreso por segundo debe ser un número válido.");return;}
+ if($("farmTargetMinutes").value.trim()!==""&&(!Number.isInteger(target)||target<1||target>1440)){toast("El objetivo debe ser entre 1 y 1440 minutos.");return;}
+ state.settings.farmIncomeRate=$("farmIncomeRate").value;
+ state.settings.farmTargetMinutes=$("farmTargetMinutes").value;
+ state.settings.farmSession={status:"running",startedAt:Date.now(),elapsedMs:0};
+ persist();renderFarmSession();toast("¡Sesión de farm iniciada!");
+});
+$("farmPause").addEventListener("click",()=>{
+ const session=state.settings.farmSession;if(!session)return;
+ if(session.status==="running"){session.elapsedMs=farmElapsed(session);session.startedAt=null;session.status="paused";}
+ else if(session.status==="paused"){session.startedAt=Date.now();session.status="running";}
+ persist();renderFarmSession();
+});
+$("farmFinish").addEventListener("click",()=>{
+ const session=state.settings.farmSession;if(!session)return;
+ const elapsed=farmElapsed(session),rate=Math.max(0,Number(state.settings.farmIncomeRate)||0);
+ state.settings.farmHistory=state.settings.farmHistory||[];
+ state.settings.farmHistory.unshift({id:Date.now(),date:new Date().toLocaleString("es-UY"),elapsedMs:elapsed,rate,earnings:rate*elapsed/1000});
+ state.settings.farmHistory=state.settings.farmHistory.slice(0,10);
+ state.settings.farmSession={status:"finished",elapsedMs:elapsed,startedAt:null};
+ persist();renderFarmSession();toast("Sesión guardada en tu historial.");
+});
+$("farmReset").addEventListener("click",()=>{
+ if(state.settings.farmSession&&state.settings.farmSession.status!=="finished"&&!confirmAction("¿Descartar la sesión actual?"))return;
+ state.settings.farmSession=null;persist();renderFarmSession();toast("Temporizador reiniciado.");
+});
+$("clearFarmHistory").addEventListener("click",()=>{
+ if(!confirmAction("¿Borrar el historial de sesiones?"))return;
+ state.settings.farmHistory=[];persist();renderFarmSession();toast("Historial de farm borrado.");
+});
+setInterval(()=>{if(state.settings.farmSession?.status==="running")renderFarmSession();},1000);
+
 function renderChecklist(){
  const checks=[...document.querySelectorAll("[data-check]")];
  const done=checks.filter(c=>state.checks[c.dataset.check]).length;
@@ -547,7 +620,7 @@ function initialize(){
  $("reducedMotion").checked=!!state.settings.reducedMotion;
  $("confirmDelete").checked=!!state.settings.confirmDelete;
  document.body.classList.toggle("reduce-motion",!!state.settings.reducedMotion);
- fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderServers();updateDashboard();
+ fillCompare();renderEggs();renderPets();renderHistory();renderGoals();renderSightings();renderFinder();renderChecklist();renderProtection();renderFarmSession();renderServers();updateDashboard();
 }
 initialize();
 })();
