@@ -465,6 +465,67 @@ $("resetData").addEventListener("click",()=>{
  toast("Datos locales restablecidos.");
 });
 
+
+function formatGameNumber(value){
+ if(!Number.isFinite(value))return "No disponible";
+ const abs=Math.abs(value);
+ if(abs>=1e12)return (value/1e12).toLocaleString("es-UY",{maximumFractionDigits:2})+"T";
+ if(abs>=1e9)return (value/1e9).toLocaleString("es-UY",{maximumFractionDigits:2})+"B";
+ if(abs>=1e6)return (value/1e6).toLocaleString("es-UY",{maximumFractionDigits:2})+"M";
+ if(abs>=1e3)return (value/1e3).toLocaleString("es-UY",{maximumFractionDigits:2})+"K";
+ return value.toLocaleString("es-UY",{maximumFractionDigits:2});
+}
+function labNumber(id){
+ const raw=$(id).value.trim();
+ if(raw==="")return null;
+ const n=Number(raw);
+ return Number.isFinite(n)?n:null;
+}
+function sizeIncomeMultiplier(weight,baseWeight){
+ if(!(weight>0)||!(baseWeight>0))return 1;
+ const ratio=weight/baseWeight;
+ if(ratio<=0)return 1;
+ if(ratio<=125)return Math.pow(ratio,37/60);
+ return Math.pow(ratio,2/5)*Math.pow(125,13/60);
+}
+$("calculatePetIncome").addEventListener("click",()=>{
+ const base=labNumber("labBaseIncome"),baseWeight=labNumber("labBaseWeight"),weight=labNumber("labCurrentWeight"),mutation=Number($("labMutation").value);
+ const out=$("petIncomeResult");
+ if(base===null||base<0||!(mutation>0)){out.textContent="Introduce un ingreso base válido y una mutación conocida.";return;}
+ if((weight!==null&&weight<=0)||(baseWeight!==null&&baseWeight<=0)){out.textContent="Los pesos deben ser mayores que cero. Si no conoces uno, déjalo vacío.";return;}
+ if(weight!==null&&baseWeight===null){out.textContent="Para calcular el tamaño necesitas introducir también el peso base.";return;}
+ const size=sizeIncomeMultiplier(weight,baseWeight),income=base*size*mutation;
+ out.textContent="Ingreso estimado: $"+formatGameNumber(income)+"/s · Tamaño ×"+size.toLocaleString("es-UY",{maximumFractionDigits:3})+" · Mutación ×"+mutation+" · Total por hora: $"+formatGameNumber(income*3600)+".";
+});
+function hatchProbability(pct,attempts){
+ const p=pct/100;
+ return 1-Math.pow(1-p,attempts);
+}
+$("calculateChance").addEventListener("click",()=>{
+ const pct=labNumber("labChance"),attempts=labNumber("labAttempts"),out=$("chanceResult");
+ if(pct===null||pct<=0||pct>100||attempts===null||attempts<1||!Number.isInteger(attempts)){out.textContent="La probabilidad debe ser mayor que 0 y hasta 100%; los intentos deben ser un entero positivo.";return;}
+ const chance=hatchProbability(pct,attempts)*100;
+ out.textContent="Probabilidad de conseguir al menos uno: "+chance.toLocaleString("es-UY",{maximumFractionDigits:4})+"% en "+attempts.toLocaleString("es-UY")+" intentos. Probabilidad de no conseguir ninguno: "+(100-chance).toLocaleString("es-UY",{maximumFractionDigits:4})+"%.";
+});
+$("calculateAttempts").addEventListener("click",()=>{
+ const pct=labNumber("labChance"),target=labNumber("labTargetChance"),out=$("attemptsResult");
+ if(pct===null||pct<=0||pct>100||target===null||target<=0||target>=100){out.textContent="Usa una probabilidad por hatch mayor que 0 y hasta 100%, y un objetivo entre 0 y 100% (sin incluir extremos).";return;}
+ const attempts=Math.ceil(Math.log(1-target/100)/Math.log(1-pct/100));
+ out.textContent="Necesitas aproximadamente "+attempts.toLocaleString("es-UY")+" hatch(es) para alcanzar al menos "+target+"% de probabilidad. No es una garantía: cada intento sigue siendo aleatorio.";
+});
+$("calculateFarmIncome").addEventListener("click",()=>{
+ const income=labNumber("labTotalIncome"),minutes=labNumber("labSessionMinutes"),out=$("farmIncomeResult");
+ if(income===null||income<0||minutes===null||minutes<0){out.textContent="Introduce ingresos y duración válidos, iguales o mayores que cero.";return;}
+ const total=income*minutes*60;
+ out.textContent="Estimación: $"+formatGameNumber(total)+" en "+minutes.toLocaleString("es-UY")+" minutos · $"+formatGameNumber(income*3600)+" por hora · $"+formatGameNumber(income*86400)+" por 24 horas.";
+});
+$("calculateRoutePlan").addEventListener("click",()=>{
+ const current=labNumber("labCurrentSpeed"),target=labNumber("labTargetSpeed"),gain=labNumber("labStepGain"),trail=Number($("labTrailGain").value),out=$("routePlanResult");
+ if(current===null||target===null||gain===null||current<0||target<0||gain<=0||!(trail>0)){out.textContent="Completa Speed actual, Speed objetivo y ganancia por paso con valores válidos.";return;}
+ const diff=Math.max(0,target-current),perStep=gain*trail,steps=Math.ceil(diff/perStep);
+ out.textContent=diff===0?"¡Ya alcanzaste o superaste tu objetivo!": "Te faltan "+formatGameNumber(diff)+" Speed. Ganancia estimada por paso: "+formatGameNumber(perStep)+". Necesitarías aproximadamente "+steps.toLocaleString("es-UY")+" pasos.";
+});
+
 function initialize(){
  load();
  $("reducedMotion").checked=!!state.settings.reducedMotion;
