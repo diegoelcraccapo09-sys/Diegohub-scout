@@ -118,3 +118,20 @@ body{background:radial-gradient(ellipse at 12% 0%,#263d7040,transparent 35%),rad
 
 /* Compact helper text for form controls */
 .field-hint{display:block;margin-top:5px;color:var(--muted);font-size:9px;line-height:1.45}
+
+/* Player profile + event checklist */
+.player-profile-card{background:radial-gradient(circle at 90% 5%,#53d9e822,transparent 35%),linear-gradient(145deg,#172943,#10182a)}
+.player-history{display:grid;gap:9px}
+.player-history-row{display:grid;gap:10px;padding:13px;border:1px solid #304767;background:#14233a;border-radius:14px}
+.player-history-row>div:first-child{display:grid;gap:4px}
+.player-history-row small{font-size:10px;color:var(--muted);overflow-wrap:anywhere}
+.player-history-metrics{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.player-history-metrics>span{display:flex;gap:5px;padding:6px 8px;background:#0d1b2d;border:1px solid #2a3d5b;border-radius:9px;font-size:10px;color:var(--muted)}
+.player-history-metrics b{color:var(--text)}
+.player-delta.positive{color:#8ef0cb}.player-delta.negative{color:#ffadad}
+.event-check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}
+.event-check-card{display:grid;gap:11px;padding:15px;border:1px solid #304767;background:#14233a;border-radius:14px}
+.event-check-card h4{margin:0 0 3px;font:700 14px 'Space Grotesk'}
+.event-check{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:var(--text);line-height:1.5}
+.event-check input{accent-color:#69b9dd;margin-top:2px;flex:0 0 auto}
+@media(max-width:560px){.event-check-grid{grid-template-columns:1fr}.player-history-metrics{gap:6px}.player-history-metrics>span{font-size:9px}}
