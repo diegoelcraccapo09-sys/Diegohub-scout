@@ -8,7 +8,7 @@ const REQUEST_GAP = 12000;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } };
 const state = {
-  tab: "inicio", cursor: null, lastRequest: 0, loading: false,
+  tab: "inicio", cursor: null, lastRequest: 0, rateLimitUntil: 0, loading: false,
   servers: [], seen: new Set(), favorites: new Set(), history: [],
   goals: [], sightings: [], finderReports: [], checks: {}, settings: { reducedMotion:false, confirmDelete:true }
 };
@@ -150,7 +150,7 @@ function renderServers(){
  const sort=$("serverSort").value,filter=$("serverFilter").value;
  let arr=[...state.servers];
  if(filter==="free")arr=arr.filter(s=>s.valid&&s.free>0);
- if(filter==="notfull")arr=arr.filter(s=>s.valid&&s.free>0);
+ if(filter==="full")arr=arr.filter(s=>s.valid&&s.free===0);
  arr.sort((a,b)=>sort==="ping"?(a.ping??999999)-(b.ping??999999):sort==="players"?a.playing-b.playing:(b.free-a.free)||((a.ping??999999)-(b.ping??999999)));
  const valid=state.servers.filter(s=>s.valid),free=valid.filter(s=>s.free>0).length,full=valid.filter(s=>s.free===0).length;
  $("serverStats").innerHTML=`<article class="stat-card"><div><small>Analizados</small><strong>${state.servers.length}</strong></div></article><article class="stat-card"><div><small>Con espacios</small><strong>${free}</strong></div></article><article class="stat-card"><div><small>Llenos</small><strong>${full}</strong></div></article><article class="stat-card"><div><small>Datos dudosos</small><strong>${state.servers.length-valid.length}</strong></div></article>`;
@@ -171,6 +171,8 @@ function renderServers(){
 $("serverSort").addEventListener("change",renderServers);$("serverFilter").addEventListener("change",renderServers);
 async function fetchServerPage(){
  const wait=Math.max(0,REQUEST_GAP-(Date.now()-state.lastRequest));
+ const cooldown=Math.max(0,state.rateLimitUntil-Date.now());
+ if(cooldown)throw new Error(`Roblox pidió una pausa. Vuelve a intentar en ${Math.ceil(cooldown/1000)} s.`);
  if(wait){$("serverStatus").textContent=`⏳ Espera ${Math.ceil(wait/1000)} s para respetar el límite de consultas...`;await sleep(wait);}
  let url=`https://games.roblox.com/v1/games/${GAME_ID}/servers/Public?limit=${PAGE_LIMIT}&sortOrder=Asc`;
  if(state.cursor)url+="&cursor="+encodeURIComponent(state.cursor);
@@ -178,7 +180,12 @@ async function fetchServerPage(){
  let response;
  try{response=await fetch(url,{headers:{"Accept":"application/json"}});}
  catch(err){throw new Error("El navegador bloqueó la conexión (posible CORS) o no hay internet. Para hacerlo fiable hace falta un pequeño proxy seguro; no es un fallo de tu código.");}
- if(response.status===429)throw new Error("Roblox limitó temporalmente las consultas. Espera un rato antes de volver a intentar.");
+ if(response.status===429){
+  const retryAfter=Number(response.headers.get("Retry-After"));
+  const pause=Number.isFinite(retryAfter)&&retryAfter>0?retryAfter*1000:60000;
+  state.rateLimitUntil=Date.now()+Math.max(60000,pause);
+  throw new Error(`Roblox limitó temporalmente las consultas. Espera ${Math.ceil(Math.max(60000,pause)/1000)} s antes de volver a intentar.`);
+ }
  if(response.status===403)throw new Error("Roblox rechazó la consulta (HTTP 403). Intenta más tarde; el panel no inventará resultados.");
  if(!response.ok)throw new Error(`Roblox respondió HTTP ${response.status}.`);
  const data=await response.json();if(!Array.isArray(data.data))throw new Error("Roblox devolvió un formato inesperado.");
@@ -187,10 +194,13 @@ async function fetchServerPage(){
 async function searchServerPage(reset){
  if(state.loading)return;
  state.loading=true;$("searchServers").disabled=true;$("nextServers").disabled=true;
- if(reset){state.cursor=null;state.seen.clear();state.servers=[];renderServers();}
+ const previousCursor=state.cursor;
+ if(reset)state.cursor=null;
  $("serverStatus").textContent="🔎 Consultando servidores públicos...";
  try{
-  const data=await fetchServerPage();let added=0;
+  const data=await fetchServerPage();
+  if(reset){state.seen.clear();state.servers=[];}
+  let added=0;
   for(const s of data.data){if(s.id&&!state.seen.has(s.id)){state.seen.add(s.id);state.servers.push(normalizeServer(s));added++;}}
   state.cursor=data.nextPageCursor||null;
   if(added===0){$("serverStatus").textContent="No llegaron servidores nuevos en esta página.";return;}
@@ -199,7 +209,7 @@ async function searchServerPage(reset){
   state.history.unshift({date:new Date().toLocaleString("es-UY"),total:added,free:valid.filter(s=>s.free>0).length,full:valid.filter(s=>s.free===0).length});
   state.history=state.history.slice(0,10);persist();renderHistory();
   $("serverStatus").textContent=`✅ Se añadieron ${added} servidores. Total acumulado: ${state.servers.length}.`;
- }catch(err){$("serverStatus").textContent="❌ "+err.message;toast("No se pudo completar la búsqueda.");}
+ }catch(err){if(reset)state.cursor=previousCursor;$("serverStatus").textContent="❌ "+err.message;toast("No se pudo completar la búsqueda.");}
  finally{state.loading=false;$("searchServers").disabled=false;$("nextServers").disabled=!state.cursor;}
 }
 $("searchServers").addEventListener("click",()=>searchServerPage(true));
