@@ -163,6 +163,23 @@ $("compareEggs").addEventListener("click",()=>{
 function updateDashboard(){
  $("statEggs").textContent=allEggs().length;$("statServers").textContent=state.servers.length;
  $("statSaved").textContent=state.favorites.size;$("statGoals").textContent=state.goals.filter(g=>g.done).length;
+ renderHomeActivity();
+}
+function renderHomeActivity(){
+ const box=$("homeActivity");if(!box)return;box.replaceChildren();
+ const items=[
+  ...state.sightings.map(x=>({kind:"Hallazgo",name:x.egg,detail:x.zone||x.notes||"Registro personal",date:x.date||""})),
+  ...state.finderReports.map(x=>({kind:"Finder",name:x.egg,detail:x.rarity||"Sin confirmar",date:x.date||""}))
+ ].slice(0,5);
+ if(!items.length){box.innerHTML='<div class="empty-state"><small>Tus hallazgos recientes aparecerán aquí cuando los registres.</small></div>';return;}
+ items.forEach(item=>{
+  const row=document.createElement("div");row.className="home-activity-item";
+  const icon=document.createElement("span");icon.className="home-activity-icon";icon.textContent=item.kind==="Finder"?"📡":"🥚";
+  const info=document.createElement("div");info.className="home-activity-copy";
+  const title=document.createElement("b");title.textContent=item.name;
+  const detail=document.createElement("small");detail.textContent=[item.kind,item.detail,item.date].filter(Boolean).join(" · ");
+  info.append(title,detail);row.append(icon,info);box.append(row);
+ });
 }
 function renderHistory(){
  const box=$("serverHistory");box.replaceChildren();
