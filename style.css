@@ -16,3 +16,6 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 
 /* Catalog contributions */
 .catalog-add{margin-top:16px}.catalog-form{display:grid;gap:12px;margin-top:14px}.catalog-form .toolbar-wrap{margin:0}.favorites-filter{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:10px}.favorites-filter input{accent-color:#9a5cff}.custom-egg-remove{justify-self:start;padding:5px 0}
+
+/* Favorite server actions */
+.server-favorite.is-favorite{border-color:#a77be0;color:#e0c6ff;background:#291c3d}
