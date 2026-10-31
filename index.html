@@ -13,7 +13,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark">👑</div>
-        <div class="brand-copy"><strong>DIEGO HUB</strong><small>STEAL AN EGG · v3.2</small></div>
+        <div class="brand-copy"><strong>DIEGO HUB</strong><small>STEAL AN EGG · v3.3</small></div>
         <button class="icon-btn close-sidebar" id="closeSidebar" aria-label="Cerrar menú">✕</button>
       </div>
       <div class="profile-mini">
@@ -49,7 +49,7 @@
         <button class="icon-btn menu-btn" id="openSidebar" aria-label="Abrir menú">☰</button>
         <div class="breadcrumb"><span>Diego Hub</span><b>/</b><strong id="pageTitle">Inicio</strong></div>
         <div class="top-actions">
-          <span class="version-pill"><i></i> v3.2</span>
+          <span class="version-pill"><i></i> v3.3</span>
           <button class="icon-btn" id="minimizeHub" title="Minimizar panel" aria-label="Minimizar panel">－</button>
         </div>
       </header>
@@ -115,6 +115,12 @@
               <button class="secondary-btn" id="joinJobId" type="button">Abrir servidor ↗</button>
             </div>
             <p class="muted server-help">También puedes copiar el Job ID de cualquier resultado y compartirlo o guardarlo.</p>
+            <div class="join-by-id">
+              <div class="field grow"><label for="serverProxyUrl">CONEXIÓN SEGURA (CLOUDFLARE WORKER)</label><input id="serverProxyUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://tu-proxy.workers.dev"></div>
+              <button class="secondary-btn" id="saveServerProxy" type="button">Guardar URL</button>
+            </div>
+            <p class="muted server-help">Roblox bloquea la consulta directa desde algunas páginas por CORS. Necesitas desplegar el proxy oficial de este proyecto una sola vez; la guía está en <a href="https://github.com/diegoelcraccapo09-sys/Diegohub-scout/blob/main/worker/README.md" target="_blank" rel="noopener noreferrer">GitHub ↗</a>. No pegues aquí contraseñas ni cookies.</p>
+
             <div class="button-row"><button class="primary-btn" id="searchServers">🔎 Buscar servidores</button><button class="secondary-btn" id="nextServers" disabled>Siguiente tanda →</button></div>
             <p class="status-text" id="serverStatus" role="status">Preparado. Pulsa buscar para consultar Roblox.</p>
             <div class="stat-grid mini-stats" id="serverStats"></div>
@@ -398,7 +404,7 @@
             <div class="setting-row"><div><b>Importar una copia</b><small>Restaura tus favoritos y registros desde un archivo JSON de Diego Hub.</small></div><button class="secondary-btn" id="importData">Importar JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
             <div class="setting-row"><div><b>Restablecer datos locales</b><small>Borra favoritos, historial y seguimiento guardado.</small></div><button class="danger-btn" id="resetData">Restablecer</button></div>
           </article>
-          <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 3.2</h3></div><span class="version-pill">v3.2</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
+          <article class="surface"><div class="card-heading"><div><span class="eyebrow">INFORMACIÓN DEL PROYECTO</span><h3>Diego Hub 3.3</h3></div><span class="version-pill">v3.3</span></div><p class="muted">Panel independiente y no oficial. No está afiliado a Roblox ni al creador de Steal An Egg.</p><p class="muted">Hecho con la ayuda de ChatGPT 💜</p><p class="muted">Gracias por confiar, capitán.</p></article>
         </section>
       </div>
       <footer class="footer"><span>👑 DIEGO HUB</span><span>Hecho con la ayuda de ChatGPT 💜</span></footer>
