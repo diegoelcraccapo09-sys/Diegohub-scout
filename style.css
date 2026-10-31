@@ -89,3 +89,15 @@ body{background:radial-gradient(ellipse at 12% 0%,#263d7040,transparent 35%),rad
 .lab-feature-grid .text-btn{justify-self:start;padding:3px 0}
 @media(max-width:850px){.lab-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.lab-input-grid,.lab-feature-grid{grid-template-columns:1fr}.lab-result{font-size:12px}}
+
+/* Egg protection helper — local checklist, not an in-game lock */
+.protection-feature{background:radial-gradient(circle at 90% 5%,#53d9e822,transparent 35%),linear-gradient(145deg,#172943,#10182a)}
+.protection-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.protection-head h2{font:700 21px 'Space Grotesk';margin:10px 0 6px}
+.protection-head .muted{max-width:680px}
+.protection-indicator{flex:0 0 auto;border:1px solid #8b718a;background:#4b304022;color:#d8b4d5;border-radius:30px;padding:7px 11px;font-size:9px;font-weight:800;letter-spacing:1px}
+.protection-indicator.is-active{border-color:#56e0ad;background:#56e0ad18;color:#8ff0c9}
+.protection-toggle{margin-top:14px;min-width:230px}
+.protection-toggle.protection-active{background:linear-gradient(110deg,#168a70,#287f9a)}
+.protection-checklist{display:grid;gap:8px;margin:15px 0}
+@media(max-width:560px){.protection-head{flex-direction:column}.protection-toggle{width:100%}}
