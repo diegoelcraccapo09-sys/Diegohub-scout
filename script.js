@@ -245,11 +245,12 @@ async function copyText(value){
  }catch{toast("No se pudo copiar. Mantén pulsado el Job ID para copiarlo.");}
 }
 function renderServers(){
- const sort=$("serverSort").value,filter=$("serverFilter").value;
+ const sort=$("serverSort").value,filter=$("serverFilter").value,minFree=Math.max(0,Math.min(100,Math.floor(Number($("serverMinFree").value)||0)));
  let arr=[...state.servers];
  if(filter==="free")arr=arr.filter(s=>s.valid&&s.free>0);
  if(filter==="full")arr=arr.filter(s=>s.valid&&s.free===0);
  if(filter==="favorites")arr=arr.filter(s=>state.serverFavorites.has(s.id));
+ if(minFree>0)arr=arr.filter(s=>s.valid&&s.free>=minFree);
  arr.sort((a,b)=>sort==="ping"?(a.ping??999999)-(b.ping??999999):sort==="players"?a.playing-b.playing:(b.free-a.free)||((a.ping??999999)-(b.ping??999999)));
  const valid=state.servers.filter(s=>s.valid),free=valid.filter(s=>s.free>0).length,full=valid.filter(s=>s.free===0).length;
  $("serverStats").innerHTML=`<article class="stat-card"><div><small>Analizados</small><strong>${state.servers.length}</strong></div></article><article class="stat-card"><div><small>Con espacios</small><strong>${free}</strong></div></article><article class="stat-card"><div><small>Llenos</small><strong>${full}</strong></div></article><article class="stat-card"><div><small>Datos dudosos</small><strong>${state.servers.length-valid.length}</strong></div></article>`;
@@ -274,7 +275,7 @@ function renderServers(){
  });
  updateDashboard();
 }
-$("serverSort").addEventListener("change",renderServers);$("serverFilter").addEventListener("change",renderServers);
+$("serverSort").addEventListener("change",renderServers);$("serverFilter").addEventListener("change",renderServers);$("serverMinFree").addEventListener("input",renderServers);
 $("joinJobId").addEventListener("click",()=>openRobloxServer($("jobIdInput").value));
 $("jobIdInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();openRobloxServer($("jobIdInput").value);}});
 async function fetchServerPage(){

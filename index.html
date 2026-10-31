@@ -108,6 +108,7 @@
             <div class="toolbar-wrap">
               <div class="field grow"><label for="serverSort">ORDENAR RESULTADOS</label><select id="serverSort"><option value="free">Más espacios libres</option><option value="ping">Menor ping informado</option><option value="players">Menos jugadores</option></select></div>
               <div class="field"><label for="serverFilter">FILTRO</label><select id="serverFilter"><option value="all">Todos</option><option value="free">Con espacios</option><option value="full">Llenos</option><option value="favorites">Mis favoritos</option></select></div>
+              <div class="field"><label for="serverMinFree">MÍNIMO DE ESPACIOS</label><input id="serverMinFree" type="number" min="0" max="100" step="1" value="0" inputmode="numeric" aria-describedby="serverMinFreeHelp"><small id="serverMinFreeHelp" class="field-hint">0 muestra todos.</small></div>
             </div>
             <div class="join-by-id">
               <div class="field grow"><label for="jobIdInput">UNIRSE MEDIANTE JOB ID</label><input id="jobIdInput" type="text" inputmode="text" autocomplete="off" maxlength="36" placeholder="Pega aquí el Job ID del servidor"></div>
